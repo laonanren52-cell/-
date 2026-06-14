@@ -15,7 +15,7 @@ export function TimelinePage() {
     () =>
       lifeCards
         .filter((card) => category === "全部" || card.category === category)
-        .filter((card) => mood === "全部" || card.moodText === mood || card.moodText.includes(mood))
+        .filter((card) => mood === "全部" || card.moodText === mood || card.moodText?.includes(mood))
         .sort((a, b) => (order === "desc" ? +new Date(b.completedAt) - +new Date(a.completedAt) : +new Date(a.completedAt) - +new Date(b.completedAt))),
     [category, lifeCards, mood, order],
   );

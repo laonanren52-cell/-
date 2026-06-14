@@ -17,6 +17,7 @@ export type AIApiConfig = {
   imageApiBase: string;
   imageApiKey: string;
   imageModel: string;
+  amapApiKey: string;
 };
 
 export type UserProfile = {
@@ -56,19 +57,22 @@ export type TodoItem = {
 
 export type LifeCard = {
   id: string;
-  taskId: string;
+  taskId?: string;
   title: string;
-  category: string;
-  note: string;
-  moodText: string;
+  category?: string;
+  note?: string;
+  moodText?: string;
   location?: string;
+  locationName?: string;
+  locationAddress?: string;
   latitude?: number;
   longitude?: number;
   completedAt: string;
   imageUrl?: string;
-  imageSource: ImageSource;
-  aiGeneratedText: string;
-  isAnniversary: boolean;
+  imageSource?: ImageSource;
+  aiGeneratedText?: string;
+  aiImageError?: string;
+  isAnniversary?: boolean;
   anniversaryDate?: string;
   createdAt: string;
   diary?: DiaryEntry;
@@ -124,6 +128,8 @@ export type CheckInInput = {
   task: LifeTask;
   completedAt: string;
   location?: string;
+  locationName?: string;
+  locationAddress?: string;
   latitude?: number;
   longitude?: number;
   moodText: string;

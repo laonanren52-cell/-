@@ -163,14 +163,21 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
           category: input.task.category,
           note: input.note,
           moodText: input.moodText,
+          locationName: input.locationName || input.location,
           preferences: profile.aiPreferences,
           aiMode: profile.aiMode,
         };
         const now = new Date().toISOString();
         const aiGeneratedText = await generateLifeCardText(aiInput);
-        const aiImageUrl = input.uploadedImageUrl
-          ? undefined
-          : await generateCardImage({ ...aiInput, shouldGenerateImage: input.shouldGenerateImage });
+        let aiImageUrl: string | undefined;
+        let aiImageError: string | undefined;
+        if (!input.uploadedImageUrl && input.shouldGenerateImage) {
+          try {
+            aiImageUrl = await generateCardImage({ ...aiInput, shouldGenerateImage: true });
+          } catch (error) {
+            aiImageError = error instanceof Error ? error.message : "AI 生图失败，已保存默认人生卡。";
+          }
+        }
         const imageUrl = input.uploadedImageUrl ?? aiImageUrl;
         const imageSource = input.uploadedImageUrl ? "uploaded" : aiImageUrl ? "ai" : "default";
 
@@ -182,12 +189,15 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
           note: input.note,
           moodText: input.moodText,
           location: input.location,
+          locationName: input.locationName,
+          locationAddress: input.locationAddress,
           latitude: input.latitude,
           longitude: input.longitude,
           completedAt: new Date(input.completedAt).toISOString(),
           imageUrl,
           imageSource,
           aiGeneratedText,
+          aiImageError,
           isAnniversary: input.isAnniversary,
           anniversaryDate: input.isAnniversary ? new Date(input.completedAt).toISOString() : undefined,
           createdAt: now,
@@ -218,7 +228,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
                 type: "countUp" as const,
                 source: "fromLifeCard" as const,
                 relatedCardId: card.id,
-                description: card.aiGeneratedText,
+                description: card.aiGeneratedText || card.note || card.title,
                 createdAt: now,
               },
               ...anniversaries,

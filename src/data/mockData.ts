@@ -24,6 +24,7 @@ export const defaultAIApiConfig = {
   imageApiBase: "",
   imageApiKey: "",
   imageModel: "gpt-image-1",
+  amapApiKey: "",
 };
 
 export const defaultProfile: UserProfile = {

@@ -76,7 +76,7 @@ export function Settings() {
             <span className="mb-2 block text-sm font-bold text-zinc-600">AI 模式</span>
             <select className="soft-input" value={aiMode} onChange={(event) => setAiMode(event.target.value as "mock" | "api")}>
               <option value="mock">Mock 模式</option>
-              <option value="api">API 模式（读取 .env）</option>
+              <option value="api">API 模式（优先使用在线配置）</option>
             </select>
           </label>
           <label>
@@ -112,7 +112,7 @@ export function Settings() {
         <div className="glass-card space-y-4 p-6">
           <h2 className="text-lg font-black text-ink">在线 AI API 配置</h2>
           <p className="text-sm leading-7 text-zinc-600">
-            这里保存的是浏览器本地配置，适合在线演示时直接接入 OpenAI 兼容接口。正式上线建议改成后端转发，避免 Key 暴露。
+            这里保存的是浏览器本地配置，适合在线演示时直接接入 OpenAI 兼容接口和高德地图逆地理服务。正式上线建议改成后端转发，避免 Key 暴露。
           </p>
           <div className="grid gap-3">
             <input
@@ -136,7 +136,7 @@ export function Settings() {
             />
             <input
               className="soft-input"
-              placeholder="生图 API Base，例如：https://api.openai.com/v1"
+              placeholder="生图 API Base，例如：https://api.siliconflow.cn/v1"
               value={aiApiConfig.imageApiBase}
               onChange={(event) => setAiApiConfig({ ...aiApiConfig, imageApiBase: event.target.value })}
             />
@@ -152,6 +152,13 @@ export function Settings() {
               placeholder="生图模型，例如：gpt-image-1"
               value={aiApiConfig.imageModel}
               onChange={(event) => setAiApiConfig({ ...aiApiConfig, imageModel: event.target.value })}
+            />
+            <input
+              className="soft-input"
+              type="password"
+              placeholder="高德地图 Web 服务 Key，用于把经纬度识别成地点名"
+              value={aiApiConfig.amapApiKey}
+              onChange={(event) => setAiApiConfig({ ...aiApiConfig, amapApiKey: event.target.value })}
             />
           </div>
           <div className="flex flex-wrap gap-2">
@@ -172,8 +179,9 @@ export function Settings() {
           <pre className="overflow-x-auto rounded-2xl bg-ink p-4 text-xs leading-6 text-white">{`接口路径：
 文本：{Base}/chat/completions
 生图：{Base}/images/generations
+地图：高德 Web 服务 /v3/geocode/regeo
 
-.env 仍然可用，但在线配置会优先生效。`}</pre>
+.env 仍然可用，但在线配置会优先生效。Base 可以填根路径，系统会自动规整重复的完整接口路径。`}</pre>
         </div>
       </section>
 

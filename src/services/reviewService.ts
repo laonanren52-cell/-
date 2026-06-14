@@ -33,7 +33,7 @@ export function getPeriodCards(cards: LifeCard[], period: ReviewPeriod) {
 }
 
 export function countByCategory(cards: LifeCard[]) {
-  return countBy(cards, (card) => card.category);
+  return countBy(cards, (card) => card.category || "未分类");
 }
 
 export function countByMood(cards: LifeCard[]) {

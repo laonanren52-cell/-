@@ -2,9 +2,10 @@ import type { AIApiConfig, AIPreferences, LifeCard, LifeTask, ReviewPeriod } fro
 
 export type LifeCardAiInput = {
   title: string;
-  category: string;
-  note: string;
-  moodText: string;
+  category?: string;
+  note?: string;
+  moodText?: string;
+  locationName?: string;
   preferences: AIPreferences;
   aiMode: "mock" | "api";
 };
@@ -20,6 +21,7 @@ const defaultRuntimeConfig: AIApiConfig = {
   imageApiBase: import.meta.env.VITE_AI_IMAGE_API_BASE ?? "",
   imageApiKey: import.meta.env.VITE_AI_IMAGE_API_KEY ?? "",
   imageModel: import.meta.env.VITE_AI_IMAGE_MODEL ?? "gpt-image-1",
+  amapApiKey: import.meta.env.VITE_AMAP_API_KEY ?? "",
 };
 
 export async function generateLifeCardText(input: LifeCardAiInput) {
@@ -28,7 +30,7 @@ export async function generateLifeCardText(input: LifeCardAiInput) {
     try {
       return await callTextApi(prompt, input.preferences);
     } catch (error) {
-      console.warn("AI text API failed, falling back to mock.", error);
+      console.warn("[AI Text] failed, falling back to mock.", error);
     }
   }
   return mockLifeCardText(input);
@@ -36,15 +38,8 @@ export async function generateLifeCardText(input: LifeCardAiInput) {
 
 export async function generateCardImage(input: ImageGenerationInput) {
   if (!input.shouldGenerateImage) return undefined;
-  const prompt = buildImagePrompt(input);
-  if (canUseImageApi(input.aiMode)) {
-    try {
-      return await callImageApi(prompt);
-    } catch (error) {
-      console.warn("AI image API failed, falling back to generated placeholder.", error);
-    }
-  }
-  return buildGradientDataImage(input);
+  if (!canUseImageApi(input.aiMode)) return undefined;
+  return callImageApi(buildImagePrompt(input));
 }
 
 export async function generateReviewSummary(input: {
@@ -59,7 +54,7 @@ export async function generateReviewSummary(input: {
     try {
       return await callTextApi(prompt, input.preferences);
     } catch (error) {
-      console.warn("AI review API failed, falling back to mock.", error);
+      console.warn("[AI Review] failed, falling back to mock.", error);
     }
   }
   return mockReviewSummary(input.cards, input.periodLabel, input.preferences);
@@ -81,7 +76,7 @@ export async function generateNextTaskSuggestions(input: {
         .filter(Boolean)
         .slice(0, 4);
     } catch (error) {
-      console.warn("AI suggestion API failed, falling back to mock.", error);
+      console.warn("[AI Suggestions] failed, falling back to mock.", error);
     }
   }
   return mockNextTaskSuggestions(input.cards);
@@ -104,45 +99,77 @@ export async function testImageApiConnection() {
   if (!config.imageApiBase || !config.imageApiKey || !config.imageModel) {
     throw new Error("请先填写生图 API Base、Key 和 Model。");
   }
-  return callImageApi("A tiny warm minimal illustration of a glowing checklist card, no text, soft light.");
+  return callImageApi("A tiny warm minimal illustration of a glowing life task card, no text, no watermark, soft light.");
 }
 
 export function buildLifeCardPrompt(input: LifeCardAiInput) {
   return [
     "你是 LifeQuest 的人生卡文案助手。请基于用户真实完成的事件写一段自然、具体、不空泛的纪念文案。",
     `任务标题：${input.title}`,
-    `任务分类：${input.category}`,
-    `用户感受：${input.note}`,
-    `今日情绪：${input.moodText}`,
+    `任务分类：${input.category || "未分类"}`,
+    `用户感受：${input.note || "未填写"}`,
+    `今日情绪：${input.moodText || "未填写"}`,
+    `地点：${input.locationName || "未记录"}`,
     `AI偏好：共情 ${input.preferences.empathy}/100，幽默 ${input.preferences.humor}/100，客观 ${input.preferences.objectivity}/100。`,
-    "要求：必须具体提到任务标题里的关键事件；写 80-140 字；像一个认真倾听的人；不要使用“你很棒”这类空泛夸奖。",
+    "要求：必须具体提到任务标题里的关键事件；写 80-140 字；像一个认真倾听的人；不要使用空泛鼓励。",
   ].join("\n");
 }
 
 export function buildImagePrompt(input: LifeCardAiInput) {
+  const eventScene = inferImageScene(input.title);
+  const emotion = input.moodText || "安静、温暖";
+  const place = input.locationName ? `地点氛围参考：${input.locationName}。` : "";
   return [
-    "温暖治愈风生活纪念图，适合作为人生卡封面。",
-    `具体事件：${input.title}`,
-    `任务分类：${input.category}`,
-    `用户感受：${input.note}`,
-    `情绪：${input.moodText}`,
-    "画面需要有真实生活感、柔和光线、清爽构图，不要文字，不要 logo。",
-  ].join(" ");
+    "温暖治愈风插画，生活感，柔和光线，细腻安静，适合作为人生纪念卡封面。",
+    `具体事件：${input.title}。`,
+    `画面主体：${eventScene}。`,
+    `用户真实感受：${input.note || "没有额外描述"}。`,
+    `情绪表达：${emotion}。`,
+    place,
+    "不要文字，不要水印，不要乱码文字，不要 logo，构图清爽，画面有真实生活气息。",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+export function normalizeApiBase(base: string, endpoint: "/chat/completions" | "/images/generations") {
+  let normalized = base.trim().replace(/\/+$/, "");
+  const duplicateEndpoints = ["/images/generations", "/chat/completions"];
+  for (const path of duplicateEndpoints) {
+    while (normalized.endsWith(path)) {
+      normalized = normalized.slice(0, -path.length).replace(/\/+$/, "");
+    }
+  }
+  return `${normalized}${endpoint}`;
+}
+
+export function getAIErrorMessage(status: number, fallback?: string) {
+  if (fallback) return fallback;
+  if (status === 401) return "API Key 错误或无权限，请检查生图 API Key。";
+  if (status === 403) return "账号权限、实名认证或额度不足，请检查平台账户状态。";
+  if (status === 404) return "接口地址或模型名错误。请检查 API Base 是否只填写到 /v1，以及模型名是否正确。";
+  if (status === 429) return "调用过于频繁，请稍后再试。";
+  return "AI 生图服务暂时异常，请稍后重试。";
 }
 
 function buildReviewPrompt(cards: LifeCard[], periodLabel: string, periodType: ReviewPeriod, preferences: AIPreferences) {
-  const events = cards.map((card) => `- ${card.title}｜情绪：${card.moodText}｜感受：${card.note}`).join("\n");
+  const events = cards
+    .map((card) => `- ${card.title}｜地点：${card.locationName || card.locationAddress || card.location || "未记录"}｜情绪：${card.moodText || "未填写"}｜感受：${card.note || "未填写"}`)
+    .join("\n");
   return [
     `请为 LifeQuest 用户生成${periodLabel}。周期类型：${periodType}。`,
     `AI偏好：共情 ${preferences.empathy}/100，幽默 ${preferences.humor}/100，客观 ${preferences.objectivity}/100。`,
     "必须基于下面真实完成的任务，不要泛泛总结：",
     events || "本周期没有记录。",
-    "要求：像一个倾听者；提到具体做过的事；如果出现疲惫、难过、孤独、紧张等情绪，请温柔回应，不要说教；100-180 字。",
+    "要求：像一个倾听者；提到具体做过的事和地点；如果出现疲惫、难过、孤独、紧张等情绪，请温柔回应，不要说教；100-180 字。",
   ].join("\n");
 }
 
 function buildSuggestionPrompt(cards: LifeCard[], tasks: LifeTask[], preferences: AIPreferences) {
-  const events = cards.slice(0, 8).map((card) => `- ${card.title}｜${card.category}｜${card.moodText}`).join("\n");
+  const events = cards
+    .slice(0, 8)
+    .map((card) => `- ${card.title}｜${card.category || "未分类"}｜${card.moodText || "未填写"}｜${card.locationName || card.location || "未记录"}`)
+    .join("\n");
   const taskTitles = tasks.map((task) => task.title).join("、");
   return [
     "请根据用户已完成的人生任务，给出 3-4 条下一步建议。",
@@ -173,6 +200,7 @@ function getRuntimeAIConfig(): AIApiConfig {
     imageApiBase: fromProfile.imageApiBase || defaultRuntimeConfig.imageApiBase,
     imageApiKey: fromProfile.imageApiKey || defaultRuntimeConfig.imageApiKey,
     imageModel: fromProfile.imageModel || defaultRuntimeConfig.imageModel,
+    amapApiKey: fromProfile.amapApiKey || defaultRuntimeConfig.amapApiKey,
   };
 }
 
@@ -190,13 +218,10 @@ function readStoredAIConfig(): AIApiConfig {
   }
 }
 
-function normalizeBaseUrl(value: string) {
-  return value.replace(/\/$/, "");
-}
-
 async function callTextApi(prompt: string, preferences: AIPreferences) {
   const config = getRuntimeAIConfig();
-  const response = await fetch(`${normalizeBaseUrl(config.textApiBase)}/chat/completions`, {
+  const url = normalizeApiBase(config.textApiBase, "/chat/completions");
+  const response = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -214,14 +239,22 @@ async function callTextApi(prompt: string, preferences: AIPreferences) {
       temperature: preferences.humor > 60 ? 0.9 : 0.65,
     }),
   });
-  if (!response.ok) throw new Error(`Text API failed: ${response.status}`);
-  const data = await response.json();
-  return data.choices?.[0]?.message?.content?.trim() || "这次记录已经被认真保存下来。";
+
+  const result = await safeJson(response);
+  if (!response.ok) throw new Error(extractApiMessage(result) || `文本 API 请求失败：${response.status}`);
+  return result.choices?.[0]?.message?.content?.trim() || "这次记录已经被认真保存下来。";
 }
 
 async function callImageApi(prompt: string) {
   const config = getRuntimeAIConfig();
-  const response = await fetch(`${normalizeBaseUrl(config.imageApiBase)}/images/generations`, {
+  const url = normalizeApiBase(config.imageApiBase, "/images/generations");
+  if (import.meta.env.DEV) {
+    console.log("[AI Image] request url:", url);
+    console.log("[AI Image] model:", config.imageModel);
+    console.log("[AI Image] prompt:", prompt);
+  }
+
+  const response = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -230,106 +263,89 @@ async function callImageApi(prompt: string) {
     body: JSON.stringify({
       model: config.imageModel,
       prompt,
-      n: 1,
+      image_size: "1024x1024",
+      batch_size: 1,
+      num_inference_steps: 20,
+      guidance_scale: 7.5,
       size: "1024x1024",
-      response_format: "b64_json",
+      n: 1,
     }),
   });
-  if (!response.ok) throw new Error(`Image API failed: ${response.status}`);
-  const data = await response.json();
-  const item = data.data?.[0];
-  if (item?.b64_json) return `data:image/png;base64,${item.b64_json}`;
+
+  const result = await safeJson(response);
+  if (import.meta.env.DEV) console.log("[AI Image] response:", result);
+  if (!response.ok) {
+    throw new Error(getAIErrorMessage(response.status, extractApiMessage(result)));
+  }
+
+  const imageUrl = extractImageUrl(result);
+  if (import.meta.env.DEV) console.log("[AI Image] final imageUrl:", imageUrl);
+  if (!imageUrl) throw new Error("AI 生图接口已返回，但没有找到可展示的图片 URL。");
+  return imageUrl;
+}
+
+function extractImageUrl(result: any) {
+  const item = result?.data?.[0] ?? result?.images?.[0];
   if (item?.url) return item.url as string;
-  throw new Error("Image API returned no image.");
+  if (item?.b64_json) return `data:image/png;base64,${item.b64_json}`;
+  if (result?.url) return result.url as string;
+  return undefined;
+}
+
+function extractApiMessage(result: any) {
+  return result?.error?.message || result?.message || result?.detail || result?.error || undefined;
+}
+
+async function safeJson(response: Response) {
+  try {
+    return await response.json();
+  } catch {
+    return {};
+  }
 }
 
 function mockLifeCardText(input: LifeCardAiInput) {
-  const key = extractTaskKey(input.title);
-  const empathic = input.preferences.empathy >= 65;
   const objective = input.preferences.objectivity >= 70;
   const humorous = input.preferences.humor >= 60;
-
   const opening = objective
     ? `这次记录的核心，是你完成了「${input.title}」。`
-    : empathic
-      ? `关于「${input.title}」这件事，你没有只是匆匆做完，而是真的把当时的自己留了下来。`
-      : `今天的支线是「${input.title}」，它比任务名听起来更具体。`;
-
-  const detail = `从你的感受里能看见：${input.note || "这件事对你有一点特别"}。情绪也不是背景音，而是这张卡的一部分：${input.moodText || "平静"}`;
-  const tail = humorous
-    ? `如果生活有存档点，这一刻大概会闪一下小光标。`
-    : key.includes("天空")
-      ? "那一眼天空不是大事，但它确实让今天有了一个可回看的颜色。"
-      : "这不是泛泛的“完成”，而是你和这一天认真打过一次照面。";
-
-  return `${opening}${detail}。${tail}`;
+    : `关于「${input.title}」这件事，你没有只是匆匆做完，而是真的把当时的自己留了下来。`;
+  const place = input.locationName ? `地点也很具体：${input.locationName}。` : "";
+  const detail = `从你的感受里能看见：${input.note || "这件事对你有一点特别"}。情绪是：${input.moodText || "平静"}。`;
+  const tail = humorous ? "如果生活有存档点，这一刻大概会闪一下小光标。" : "这不是泛泛的“完成”，而是你和这一天认真打过一次照面。";
+  return `${opening}${place}${detail}${tail}`;
 }
 
 function mockReviewSummary(cards: LifeCard[], periodLabel: string, preferences: AIPreferences) {
   if (!cards.length) return `${periodLabel}暂时没有新的记录。空白也不是失败，它只是提醒你：下一条支线可以从一件很小、很容易开始的事出发。`;
   const titles = cards.map((card) => `「${card.title}」`).slice(0, 4).join("、");
   const moods = cards.map((card) => card.moodText).filter(Boolean).slice(0, 4).join("、");
+  const places = cards.map((card) => card.locationName || card.locationAddress || card.location).filter(Boolean).slice(0, 3).join("、");
   const hasHeavyMood = /累|难过|孤独|紧张|焦虑|低落|委屈|烦/.test(`${moods} ${cards.map((card) => card.note).join(" ")}`);
   const empathyLine = preferences.empathy > 60
     ? hasHeavyMood
       ? "里面有些情绪并不轻，但你还是把它记录下来了，这本身就是一种照顾自己的方式。"
       : "这些小事不喧哗，却很像你在认真生活的证据。"
     : "从事件分布看，你这段时间主要在推进可执行的小目标。";
-  const objectiveLine = preferences.objectivity > 70 ? `本周期共 ${cards.length} 条记录，核心事件包括 ${titles}。` : `这段时间，你留下了 ${titles}。`;
-  return `${objectiveLine}${empathyLine}${moods ? ` 情绪关键词大概是：${moods}。` : ""}下一步不用突然改变很多，顺着已经发生的事情，再多走半步就好。`;
+  return `这段时间，你留下了 ${titles}。${places ? `地点也变得更清楚：${places}。` : ""}${empathyLine}${moods ? ` 情绪关键词大概是：${moods}。` : ""}下一步不用突然改变很多，顺着已经发生的事情，再多走半步就好。`;
 }
 
 function mockNextTaskSuggestions(cards: LifeCard[]) {
   if (!cards.length) return ["从一件 15 分钟内能完成的小事开始，比如拍一张今天的天空。"];
-  const recent = cards.slice(0, 5);
-  const suggestions = recent.flatMap((card) => {
+  const suggestions = cards.slice(0, 5).flatMap((card) => {
     const title = card.title;
-    if (/天空|晚霞|风景|照片|拍/.test(title)) {
-      return ["连续记录三天的天空变化", "给这张照片写一句当时的心情", "下次拍一个让你觉得平静的角落"];
-    }
-    if (/一个人|独处|书店|火锅|散步|日落/.test(title)) {
-      return ["试试一个人去喝一杯饮品", "记录一次独处时最放松的瞬间", "下次一个人去书店坐 20 分钟"];
-    }
-    if (/朋友|父母|问候|感谢|信|关系/.test(title)) {
-      return ["和那个人多聊两句近况", "记录一次重新连接后的感受", "想一想还有没有一个你想念但很久没联系的人"];
-    }
-    if (/运动|技能|读完|早睡|成长/.test(title)) {
-      return ["把这次成长拆成一个明天也能做的小动作", "记录一下最想继续坚持的原因", "给这个挑战设置一个轻量复盘点"];
-    }
+    if (/天空|晚霞|风景|照片|拍/.test(title)) return ["连续记录三天的天空变化", "给这张照片写一句当时的心情", "下次拍一个让你觉得平静的角落"];
+    if (/一个人|独处|书店|火锅|散步|日落|吃饭/.test(title)) return ["试试一个人去喝一杯饮品", "记录一次独处时最放松的瞬间", "下次一个人去书店坐 20 分钟"];
+    if (/朋友|父母|问候|感谢|信|关系/.test(title)) return ["和那个人多聊两句近况", "记录一次重新连接后的感受", "想一想还有没有一个你想念但很久没联系的人"];
     return [`沿着「${title}」再做一个更轻的小版本`];
   });
   return [...new Set(suggestions)].slice(0, 4);
 }
 
-function extractTaskKey(title: string) {
-  return title.replace(/^第一次/, "").replace(/[，。,.]/g, "").trim();
-}
-
-function buildGradientDataImage(input: LifeCardAiInput) {
-  const title = escapeXml(input.title);
-  const mood = escapeXml(input.moodText || "这一刻值得保存");
-  const category = escapeXml(input.category);
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="900" viewBox="0 0 1200 900">
-      <defs>
-        <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
-          <stop offset="0%" stop-color="#ffd9df"/>
-          <stop offset="48%" stop-color="#fff8ed"/>
-          <stop offset="100%" stop-color="#bfe9ff"/>
-        </linearGradient>
-      </defs>
-      <rect width="1200" height="900" fill="url(#bg)"/>
-      <circle cx="980" cy="160" r="170" fill="#ffffff" opacity="0.32"/>
-      <circle cx="210" cy="760" r="210" fill="#ff8f70" opacity="0.16"/>
-      <rect x="90" y="105" width="1020" height="690" rx="56" fill="#ffffff" opacity="0.55"/>
-      <text x="140" y="205" fill="#2f3137" font-size="34" font-family="sans-serif" font-weight="700">${category}</text>
-      <text x="140" y="420" fill="#2f3137" font-size="62" font-family="sans-serif" font-weight="900">${title}</text>
-      <text x="140" y="515" fill="#555" font-size="34" font-family="sans-serif">${mood}</text>
-      <text x="140" y="690" fill="#ff8f70" font-size="28" font-family="sans-serif" font-weight="700">LifeQuest AI Image</text>
-    </svg>`;
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-}
-
-function escapeXml(value: string) {
-  return value.replace(/[<>&'"]/g, (char) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" })[char] ?? char);
+function inferImageScene(title: string) {
+  if (/吃饭|火锅|餐/.test(title)) return "一个年轻人独自坐在小餐馆靠窗的位置吃饭，桌上有简单热气的饭菜，窗外是柔和的城市夜色";
+  if (/天空|晚霞|风景|拍/.test(title)) return "一张被认真看见的天空或晚霞，前景有一点生活场景，像随手记录但很珍贵";
+  if (/书店|读书/.test(title)) return "一个人在温暖书店的书架之间慢慢翻书，午后光线落在书页上";
+  if (/父母|朋友|问候|信|感谢/.test(title)) return "温暖的人际连接场景，桌面有信纸或手机消息，光线柔和";
+  return `围绕「${title}」的真实生活瞬间`;
 }

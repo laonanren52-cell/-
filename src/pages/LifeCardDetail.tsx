@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { CalendarHeart, Image, MapPin, Save, Sparkles } from "lucide-react";
+import { LifeCardImage } from "../components/LifeCard/LifeCardImage";
 import { MoodPill, moodExamples } from "../components/MoodTag/MoodTag";
 import { useAppData } from "../services/AppDataContext";
+import { getDisplayLocation } from "../services/reverseGeocodeService";
 import type { DiaryEntry } from "../types";
 import { createId } from "../utils/id";
 import { formatDate } from "../utils/date";
@@ -17,6 +19,7 @@ export function LifeCardDetail() {
   if (!card) {
     return <div className="page-shell"><div className="glass-card p-8">没有找到这张人生卡。</div></div>;
   }
+  const displayLocation = getDisplayLocation(card);
 
   function saveDiary() {
     const diary: DiaryEntry = {
@@ -33,12 +36,16 @@ export function LifeCardDetail() {
   return (
     <div className="page-shell grid grid-cols-1 gap-6 lg:grid-cols-[0.95fr_1.05fr]">
       <section className="glass-card overflow-hidden">
-        <div className="relative min-h-[520px] bg-gradient-to-br from-blush via-cream to-skysoft p-7">
-          {card.imageUrl ? <img src={card.imageUrl} alt={card.title} className="absolute inset-0 h-full w-full object-cover" /> : null}
+        <LifeCardImage
+          imageUrl={card.imageUrl}
+          imageSource={card.imageSource}
+          title={card.title}
+          className="min-h-[520px] p-7"
+        >
           <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-white/10" />
           <div className="relative flex min-h-[460px] flex-col justify-between">
             <div className="flex items-center justify-between gap-3">
-              <span className="rounded-full bg-white/85 px-4 py-2 text-xs font-black text-ink">{card.category}</span>
+              <span className="rounded-full bg-white/85 px-4 py-2 text-xs font-black text-ink">{card.category || "人生支线"}</span>
               <span className="rounded-full bg-ink px-4 py-2 text-xs font-black text-white">
                 {card.imageSource === "uploaded" ? "用户照片" : card.imageSource === "ai" ? "AI 生成图" : "默认卡片"}
               </span>
@@ -52,7 +59,7 @@ export function LifeCardDetail() {
               <p className="mt-5 text-lg leading-9 text-zinc-700">{card.aiGeneratedText}</p>
             </div>
           </div>
-        </div>
+        </LifeCardImage>
       </section>
 
       <section className="space-y-5">
@@ -60,12 +67,12 @@ export function LifeCardDetail() {
           <p className="mb-4 inline-flex rounded-full bg-orange-50 px-3 py-1 text-sm font-bold text-orange-700">{card.moodText}</p>
           <div className="grid gap-3 text-sm text-zinc-600 sm:grid-cols-2">
             <p><span className="font-bold text-ink">完成时间：</span>{formatDate(card.completedAt, true)}</p>
-            <p><span className="font-bold text-ink">地点：</span>{card.location || "未记录"}</p>
+            <p className="flex items-center gap-2"><MapPin size={17} /><span className="font-bold text-ink">地点：</span>{displayLocation}</p>
+            {card.locationAddress && card.locationAddress !== displayLocation ? (
+              <p className="sm:col-span-2"><span className="font-bold text-ink">详细地址：</span>{card.locationAddress}</p>
+            ) : null}
             <p><span className="font-bold text-ink">原始感受：</span>{card.note}</p>
             <p className="flex items-center gap-2"><CalendarHeart size={17} />{card.isAnniversary ? "已转化为纪念日" : "普通人生卡"}</p>
-            {card.latitude && card.longitude ? (
-              <p className="flex items-center gap-2 sm:col-span-2"><MapPin size={17} />经纬度：{card.latitude}, {card.longitude}</p>
-            ) : null}
           </div>
           {card.isAnniversary ? (
             <Link to="/anniversaries" className="secondary-button mt-5">查看纪念日</Link>
@@ -84,6 +91,9 @@ export function LifeCardDetail() {
                 ? "这张人生卡使用 AI 根据任务、感受和情绪生成的纪念图。"
                 : "这张人生卡使用默认温暖视觉背景。"}
           </p>
+          {card.aiImageError ? (
+            <p className="mt-3 rounded-2xl bg-rose-50 p-4 text-sm leading-7 text-rose-800">{card.aiImageError}</p>
+          ) : null}
         </div>
 
         <div className="glass-card p-6">
