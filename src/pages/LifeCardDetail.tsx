@@ -74,44 +74,45 @@ export function LifeCardDetail() {
   }
 
   return (
-    <div className="page-shell grid grid-cols-1 gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-      <section className="glass-card overflow-hidden">
-        <LifeCardImage
-          imageUrl={card.imageUrl}
-          imageSource={card.imageSource}
-          title={card.title}
-          className="min-h-[520px] p-7"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-white/10" />
-          <div className="relative flex min-h-[460px] flex-col justify-between">
-            <div className="flex items-center justify-between gap-3">
-              <span className="rounded-full bg-white/85 px-4 py-2 text-xs font-black text-ink">{card.category || "人生支线"}</span>
-              <span className="rounded-full bg-ink px-4 py-2 text-xs font-black text-white">
-                {card.imageSource === "uploaded" ? "用户照片" : card.imageSource === "ai" ? "AI 生成图" : "默认卡片"}
-              </span>
-            </div>
-            <div>
-              <p className="mb-3 flex items-center gap-2 text-sm font-bold text-zinc-600">
-                <Sparkles size={16} />
-                AI 纪念文案
-              </p>
-              <h1 className="text-4xl font-black leading-tight text-ink">{card.title}</h1>
-              <p className="mt-5 text-lg leading-9 text-zinc-700">{card.aiGeneratedText}</p>
-            </div>
+    <div className="page-shell grid grid-cols-1 items-start gap-6 lg:grid-cols-[0.95fr_1.05fr]">
+      <section className="overflow-hidden rounded-3xl bg-white shadow-sm">
+        <div className="relative h-[360px] overflow-hidden sm:h-[420px]">
+          <LifeCardImage
+            imageUrl={card.imageUrl}
+            imageSource={card.imageSource}
+            title={card.title}
+            className="h-full w-full"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/10" />
+          <div className="absolute left-5 top-5 max-w-[58%] truncate rounded-full bg-white/90 px-4 py-2 text-xs font-bold text-gray-900 shadow-sm">
+            {card.category || "人生支线"}
           </div>
-        </LifeCardImage>
+          <div className="absolute right-5 top-5 rounded-full bg-gray-900/85 px-4 py-2 text-xs font-bold text-white shadow-sm">
+            {card.imageSource === "uploaded" ? "用户照片" : card.imageSource === "ai" ? "AI 图" : "默认卡"}
+          </div>
+        </div>
+        <div className="space-y-4 p-7 sm:p-8">
+          <p className="flex items-center gap-2 text-sm font-bold text-orange-600">
+            <Sparkles size={16} />
+            AI 纪念文案
+          </p>
+          <h1 className="break-words text-3xl font-bold leading-tight text-gray-900 sm:text-4xl">{card.title}</h1>
+          <p className="whitespace-pre-line break-words text-lg leading-8 text-gray-700">
+            {card.aiGeneratedText || "这张人生卡已经被认真保存下来。"}
+          </p>
+        </div>
       </section>
 
       <section className="space-y-5">
         <div className="glass-card p-6">
           <p className="mb-4 inline-flex rounded-full bg-orange-50 px-3 py-1 text-sm font-bold text-orange-700">{card.moodText}</p>
-          <div className="grid gap-3 text-sm text-zinc-600 sm:grid-cols-2">
-            <p><span className="font-bold text-ink">完成时间：</span>{formatDate(card.completedAt, true)}</p>
-            <p className="flex items-center gap-2"><MapPin size={17} /><span className="font-bold text-ink">地点：</span>{displayLocation}</p>
+          <div className="grid gap-3 text-sm leading-7 text-gray-700 sm:grid-cols-2">
+            <p><span className="font-bold text-gray-900">完成时间：</span>{formatDate(card.completedAt, true)}</p>
+            <p className="flex items-center gap-2"><MapPin size={17} /><span className="font-bold text-gray-900">地点：</span>{displayLocation}</p>
             {card.locationAddress && card.locationAddress !== displayLocation ? (
-              <p className="sm:col-span-2"><span className="font-bold text-ink">详细地址：</span>{card.locationAddress}</p>
+              <p className="break-words sm:col-span-2"><span className="font-bold text-gray-900">详细地址：</span>{card.locationAddress}</p>
             ) : null}
-            <p><span className="font-bold text-ink">原始感受：</span>{card.note}</p>
+            <p className="break-words"><span className="font-bold text-gray-900">原始感受：</span>{card.note}</p>
             <p className="flex items-center gap-2"><CalendarHeart size={17} />{card.isAnniversary ? "已转化为纪念日" : "普通人生卡"}</p>
           </div>
           {card.isAnniversary ? (

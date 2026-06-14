@@ -18,7 +18,7 @@ export function TimelineList({ cards }: { cards: LifeCard[] }) {
             <h2 className="text-lg font-black text-ink">{month}</h2>
             <span className="text-sm text-zinc-500">{monthCards.length} 张人生卡</span>
           </div>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid auto-rows-auto grid-cols-1 items-start gap-6 md:grid-cols-2 xl:grid-cols-3">
             {monthCards.map((card) => (
               <LifeCardPreview key={card.id} card={card} compact />
             ))}

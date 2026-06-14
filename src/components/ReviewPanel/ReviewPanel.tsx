@@ -4,7 +4,7 @@ import { LifeCardPreview } from "../LifeCard/LifeCardPreview";
 
 export function ReviewPanel({ report }: { report: ReviewReport }) {
   return (
-    <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+    <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_420px]">
       <section className="glass-card p-6">
         <div className="mb-5 flex items-center gap-3">
           <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-100 text-orange-700">
@@ -20,17 +20,17 @@ export function ReviewPanel({ report }: { report: ReviewReport }) {
           <Metric label="常见情绪" value={report.topMood ?? "等待记录"} />
           <Metric label="高频分类" value={report.topCategory ?? "暂无"} />
         </div>
-        <div className="mt-6 rounded-2xl bg-white/70 p-5">
-          <p className="text-sm font-bold text-zinc-500">AI 阶段总结</p>
-          <p className="mt-3 whitespace-pre-line text-base leading-8 text-ink">{report.aiSummary}</p>
+        <div className="mt-6 rounded-2xl bg-white/80 p-5">
+          <p className="text-sm font-bold text-gray-500">AI 阶段总结</p>
+          <p className="mt-3 whitespace-pre-line break-words text-base leading-8 text-gray-700">{report.aiSummary}</p>
         </div>
         <div className="mt-5 rounded-2xl bg-ink p-5 text-white">
           <p className="text-sm font-bold text-white/70">下一步建议</p>
           <div className="mt-3 grid gap-2">
             {report.nextSuggestions.length ? report.nextSuggestions.map((suggestion) => (
-              <p key={suggestion} className="flex items-center gap-2 text-sm">
-                <ArrowRight size={16} />
-                {suggestion}
+              <p key={suggestion} className="flex items-start gap-2 text-sm leading-6">
+                <ArrowRight className="mt-1 shrink-0" size={16} />
+                <span className="break-words">{suggestion}</span>
               </p>
             )) : (
               <p className="text-sm text-white/70">正在生成更贴近你记录的建议...</p>
@@ -39,7 +39,7 @@ export function ReviewPanel({ report }: { report: ReviewReport }) {
         </div>
       </section>
       <section className="space-y-4">
-        <h3 className="text-lg font-black text-ink">代表性人生卡</h3>
+        <h3 className="text-lg font-bold text-gray-900">代表性人生卡</h3>
         {report.representativeCards.length ? (
           report.representativeCards.map((card) => <LifeCardPreview key={card.id} card={card} compact />)
         ) : (
