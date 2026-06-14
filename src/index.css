@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color: #2f3137;
+  background: #fff8ed;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+@layer components {
+  .page-shell {
+    @apply mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8;
+  }
+
+  .glass-card {
+    @apply rounded-2xl border border-white/70 bg-white/75 shadow-sm backdrop-blur;
+  }
+
+  .section-title {
+    @apply text-xl font-bold text-ink sm:text-2xl;
+  }
+
+  .soft-input {
+    @apply w-full rounded-2xl border border-orange-100 bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-coral focus:ring-4 focus:ring-orange-100;
+  }
+
+  .primary-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-ink px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-black focus:outline-none focus:ring-4 focus:ring-orange-100;
+  }
+
+  .secondary-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl border border-orange-100 bg-white/80 px-4 py-3 text-sm font-semibold text-ink shadow-sm transition hover:-translate-y-0.5 hover:border-coral hover:bg-white focus:outline-none focus:ring-4 focus:ring-orange-100;
+  }
+
+  .icon-button {
+    @apply inline-flex h-10 w-10 items-center justify-center rounded-full border border-orange-100 bg-white/80 text-ink shadow-sm transition hover:-translate-y-0.5 hover:border-coral hover:bg-white;
+  }
+}
