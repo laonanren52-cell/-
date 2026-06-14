@@ -106,7 +106,7 @@ export function Dashboard() {
           <h2 className="section-title">最近完成</h2>
           <Link to="/timeline" className="text-sm font-bold text-coral">查看人生轨迹</Link>
         </div>
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
           {recentCards.map((card) => <LifeCardPreview key={card.id} card={card} compact />)}
         </div>
       </section>

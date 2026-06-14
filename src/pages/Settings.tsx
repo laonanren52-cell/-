@@ -12,11 +12,23 @@ export function Settings() {
   const [aiPreferences, setAiPreferences] = useState(profile.aiPreferences);
   const [aiApiConfig, setAiApiConfig] = useState(profile.aiApiConfig);
   const [apiTestMessage, setApiTestMessage] = useState("");
+  const [imageTestUrl, setImageTestUrl] = useState("");
   const [testingApi, setTestingApi] = useState<"text" | "image" | null>(null);
 
+  const hasCompleteApiConfig = Boolean(
+    (aiApiConfig.textApiBase && aiApiConfig.textApiKey && aiApiConfig.textModel) ||
+    (aiApiConfig.imageApiBase && aiApiConfig.imageApiKey && aiApiConfig.imageModel),
+  );
+
   function saveProfile() {
-    updateProfile({ ...profile, nickname, aiMode, theme, aiPreferences, aiApiConfig });
-    setApiTestMessage("AI 配置已保存。切换到 API 模式后，打卡和复盘会优先使用在线接口。");
+    const nextAiMode = hasCompleteApiConfig ? "api" : aiMode;
+    setAiMode(nextAiMode);
+    updateProfile({ ...profile, nickname, aiMode: nextAiMode, theme, aiPreferences, aiApiConfig });
+    setApiTestMessage(
+      nextAiMode === "api"
+        ? "API 配置已保存，并已自动切换为 API 模式。"
+        : "设置已保存。填写完整 API Base、Key、Model 后可启用在线 AI。",
+    );
   }
 
   async function testTextApi() {
@@ -35,11 +47,14 @@ export function Settings() {
 
   async function testImageApi() {
     updateProfile({ ...profile, nickname, aiMode: "api", theme, aiPreferences, aiApiConfig });
+    setAiMode("api");
     setTestingApi("image");
+    setImageTestUrl("");
     setApiTestMessage("正在测试生图 API...");
     try {
-      await testImageApiConnection();
-      setApiTestMessage("生图 API 连接成功，已经拿到图片返回。");
+      const imageUrl = await testImageApiConnection();
+      setImageTestUrl(imageUrl);
+      setApiTestMessage("生图 API 连接成功，已展示测试图片。");
     } catch (error) {
       setApiTestMessage(error instanceof Error ? error.message : "生图 API 测试失败。");
     } finally {
@@ -114,6 +129,9 @@ export function Settings() {
           <p className="text-sm leading-7 text-zinc-600">
             这里保存的是浏览器本地配置，适合在线演示时直接接入 OpenAI 兼容接口和高德地图逆地理服务。正式上线建议改成后端转发，避免 Key 暴露。
           </p>
+          <p className="rounded-2xl bg-amber-50 p-4 text-sm font-bold leading-7 text-amber-900">
+            仅保存 API 配置不等于启用在线 AI。请将 AI 模式切换为 API 模式，并点击保存设置；填写完整 API 后点击“保存 API 配置”会自动切换。
+          </p>
           <div className="grid gap-3">
             <input
               className="soft-input"
@@ -176,6 +194,11 @@ export function Settings() {
             </button>
           </div>
           {apiTestMessage ? <p className="rounded-2xl bg-orange-50 p-4 text-sm leading-7 text-orange-900">{apiTestMessage}</p> : null}
+          {imageTestUrl ? (
+            <div className="overflow-hidden rounded-3xl border border-white/80 bg-white shadow-sm">
+              <img src={imageTestUrl} alt="生图 API 测试结果" className="h-64 w-full object-cover" />
+            </div>
+          ) : null}
           <pre className="overflow-x-auto rounded-2xl bg-ink p-4 text-xs leading-6 text-white">{`接口路径：
 文本：{Base}/chat/completions
 生图：{Base}/images/generations

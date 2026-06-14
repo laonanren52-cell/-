@@ -43,5 +43,11 @@ export function getDisplayLocation(card: {
   locationAddress?: string;
   location?: string;
 }) {
-  return card.locationName || card.locationAddress || card.location || "未记录地点";
+  const location = card.locationName || card.locationAddress || card.location;
+  if (!location) return "未记录地点";
+  return isCoordinateLikeLocation(location) ? "未识别地点" : location;
+}
+
+export function isCoordinateLikeLocation(value: string) {
+  return /[-+]?\d{1,3}\.\d{3,}\s*[,，]\s*[-+]?\d{1,3}\.\d{3,}/.test(value);
 }

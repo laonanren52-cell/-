@@ -31,17 +31,12 @@ export function LifeCardImage({ imageUrl, imageSource, title, className = "", ch
   );
 }
 
-function DefaultTexture({ imageSource }: { imageSource?: ImageSource }) {
+function DefaultTexture({ imageSource: _imageSource }: { imageSource?: ImageSource }) {
   return (
     <>
       <div className="absolute right-[-20%] top-[-20%] h-64 w-64 rounded-full bg-white/45 blur-2xl" />
       <div className="absolute bottom-[-18%] left-[-12%] h-72 w-72 rounded-full bg-coral/15 blur-2xl" />
       <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-white/5" />
-      {imageSource === "ai" ? (
-        <span className="absolute right-4 top-4 rounded-full bg-white/80 px-3 py-1 text-xs font-bold text-ink">
-          AI 图片加载失败，已使用默认背景
-        </span>
-      ) : null}
     </>
   );
 }

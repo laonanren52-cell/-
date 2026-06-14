@@ -29,6 +29,7 @@ export function CheckIn() {
   const [shouldGenerateImage, setShouldGenerateImage] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState("");
+  const [mockModeWarning, setMockModeWarning] = useState(false);
 
   if (!task) {
     return <div className="page-shell"><div className="glass-card p-8">没有找到这条任务。</div></div>;
@@ -36,6 +37,16 @@ export function CheckIn() {
 
   async function submit(event: FormEvent) {
     event.preventDefault();
+    await submitCard(false);
+  }
+
+  async function submitCard(allowMockFallback: boolean) {
+    if (!imageUrl && shouldGenerateImage && profile.aiMode !== "api" && !allowMockFallback) {
+      setMockModeWarning(true);
+      setSubmitMessage("当前仍是 Mock 模式，不会调用真实生图接口。请到设置页切换 API 模式。");
+      return;
+    }
+    setMockModeWarning(false);
     setSubmitting(true);
     setSubmitMessage(
       !imageUrl && shouldGenerateImage
@@ -89,7 +100,7 @@ export function CheckIn() {
       return;
     }
     setGeoLoading(true);
-    setGeoMessage("正在获取当前位置...");
+    setGeoMessage("正在识别当前位置...");
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const lat = Number(position.coords.latitude.toFixed(6));
@@ -155,7 +166,7 @@ export function CheckIn() {
                 />
                 <button className="secondary-button" type="button" onClick={getLocation} disabled={geoLoading}>
                   {geoLoading ? <Loader2 className="animate-spin" size={18} /> : <LocateFixed size={18} />}
-                  {geoLoading ? "定位中" : "获取当前位置"}
+                  {geoLoading ? "正在识别当前位置" : "获取当前位置"}
                 </button>
               </div>
               {geoMessage ? <p className="mt-2 text-xs font-semibold text-zinc-500">{geoMessage}</p> : null}
@@ -214,6 +225,19 @@ export function CheckIn() {
                 {submitting ? (!imageUrl && shouldGenerateImage ? "正在生成纪念图..." : "正在保存...") : "生成我的人生卡"}
               </button>
               {submitMessage ? <p className="mt-3 text-xs font-semibold leading-6 text-zinc-500">{submitMessage}</p> : null}
+              {mockModeWarning ? (
+                <div className="mt-3 grid gap-2 rounded-2xl bg-amber-50 p-4 text-sm text-amber-900">
+                  <p className="font-bold">当前仍是 Mock 模式，不会调用真实生图接口。</p>
+                  <div className="flex flex-wrap gap-2">
+                    <button className="secondary-button bg-white" type="button" onClick={() => submitCard(true)}>
+                      继续保存默认卡片
+                    </button>
+                    <button className="secondary-button bg-white" type="button" onClick={() => navigate("/settings")}>
+                      去设置页开启 API 模式
+                    </button>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
         </aside>

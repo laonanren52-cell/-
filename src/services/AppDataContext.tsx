@@ -44,6 +44,7 @@ type AppDataContextValue = {
   removeTodo: (id: string) => void;
   toggleTodoPin: (id: string) => void;
   createLifeCard: (input: CheckInInput) => Promise<LifeCard>;
+  updateLifeCard: (cardId: string, patch: Partial<LifeCard>) => void;
   updateDiary: (cardId: string, diary: DiaryEntry) => void;
   addAnniversary: (anniversary: Omit<Anniversary, "id" | "createdAt">) => void;
   resetAllData: () => void;
@@ -172,10 +173,14 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         let aiImageUrl: string | undefined;
         let aiImageError: string | undefined;
         if (!input.uploadedImageUrl && input.shouldGenerateImage) {
-          try {
-            aiImageUrl = await generateCardImage({ ...aiInput, shouldGenerateImage: true });
-          } catch (error) {
-            aiImageError = error instanceof Error ? error.message : "AI 生图失败，已保存默认人生卡。";
+          if (profile.aiMode !== "api") {
+            aiImageError = "当前是 Mock 模式，未调用真实生图接口。";
+          } else {
+            try {
+              aiImageUrl = await generateCardImage({ ...aiInput, shouldGenerateImage: true });
+            } catch (error) {
+              aiImageError = error instanceof Error ? error.message : "AI 生图失败，已保存默认人生卡。";
+            }
           }
         }
         const imageUrl = input.uploadedImageUrl ?? aiImageUrl;
@@ -244,6 +249,15 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         saveTodos(nextTodos);
         saveAnniversaries(nextAnniversaries);
         return card;
+      },
+      updateLifeCard(cardId, patch) {
+        const nextCards = lifeCards.map((card) => {
+          if (card.id !== cardId) return card;
+          const nextDiary = patch.imageUrl && card.diary ? { ...card.diary, imageUrl: patch.imageUrl } : card.diary;
+          return { ...card, ...patch, diary: nextDiary };
+        });
+        setLifeCards(nextCards);
+        saveLifeCards(nextCards);
       },
       updateDiary(cardId, diary) {
         const nextCards = lifeCards.map((card) => (card.id === cardId ? { ...card, diary } : card));

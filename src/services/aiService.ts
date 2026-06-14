@@ -37,6 +37,7 @@ export async function generateLifeCardText(input: LifeCardAiInput) {
 }
 
 export async function generateCardImage(input: ImageGenerationInput) {
+  if (import.meta.env.DEV) console.log("[AI Image] shouldGenerate:", input.shouldGenerateImage);
   if (!input.shouldGenerateImage) return undefined;
   if (!canUseImageApi(input.aiMode)) return undefined;
   return callImageApi(buildImagePrompt(input));
@@ -149,6 +150,7 @@ export function getAIErrorMessage(status: number, fallback?: string) {
   if (status === 403) return "账号权限、实名认证或额度不足，请检查平台账户状态。";
   if (status === 404) return "接口地址或模型名错误。请检查 API Base 是否只填写到 /v1，以及模型名是否正确。";
   if (status === 429) return "调用过于频繁，请稍后再试。";
+  if (status >= 500) return "AI 生图服务暂时异常，请稍后重试。";
   return "AI 生图服务暂时异常，请稍后重试。";
 }
 
@@ -254,23 +256,31 @@ async function callImageApi(prompt: string) {
     console.log("[AI Image] prompt:", prompt);
   }
 
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${config.imageApiKey}`,
-    },
-    body: JSON.stringify({
-      model: config.imageModel,
-      prompt,
-      image_size: "1024x1024",
-      batch_size: 1,
-      num_inference_steps: 20,
-      guidance_scale: 7.5,
-      size: "1024x1024",
-      n: 1,
-    }),
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${config.imageApiKey}`,
+      },
+      body: JSON.stringify({
+        model: config.imageModel,
+        prompt,
+        image_size: "1024x1024",
+        batch_size: 1,
+        num_inference_steps: 20,
+        guidance_scale: 7.5,
+        size: "1024x1024",
+        n: 1,
+      }),
+    });
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error("浏览器前端直连被拦截，建议改为后端代理。");
+    }
+    throw error;
+  }
 
   const result = await safeJson(response);
   if (import.meta.env.DEV) console.log("[AI Image] response:", result);
@@ -280,7 +290,7 @@ async function callImageApi(prompt: string) {
 
   const imageUrl = extractImageUrl(result);
   if (import.meta.env.DEV) console.log("[AI Image] final imageUrl:", imageUrl);
-  if (!imageUrl) throw new Error("AI 生图接口已返回，但没有找到可展示的图片 URL。");
+  if (!imageUrl) throw new Error("接口成功但没有解析到图片 URL，请检查返回值格式。");
   return imageUrl;
 }
 

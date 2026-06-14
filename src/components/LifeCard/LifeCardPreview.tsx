@@ -7,45 +7,44 @@ import { LifeCardImage } from "./LifeCardImage";
 
 export function LifeCardPreview({ card, compact = false }: { card: LifeCard; compact?: boolean }) {
   const displayLocation = getDisplayLocation(card);
+  const imageLabel = card.imageSource === "uploaded" ? "用户照片" : card.imageSource === "ai" ? "AI 图" : "默认卡";
+  const summary = card.aiGeneratedText || card.note || "这张人生卡记录了一个真实完成的生活片段。";
 
   return (
     <Link
       to={`/cards/${card.id}`}
-      className="group glass-card block overflow-hidden transition hover:-translate-y-1 hover:shadow-glow"
+      className="group flex h-full min-h-[360px] flex-col overflow-hidden rounded-3xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-glow"
     >
-      <LifeCardImage imageUrl={card.imageUrl} imageSource={card.imageSource} title={card.title} className="min-h-40 p-5">
-        <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-white/10" />
-        <div className="relative flex h-full min-h-32 flex-col justify-between gap-8">
-          <div className="flex justify-between gap-3">
-            <span className="rounded-full bg-white/85 px-3 py-1 text-xs font-bold text-ink">{card.category || "人生支线"}</span>
-            <span className="rounded-full bg-ink/85 px-3 py-1 text-xs font-bold text-white">
-              {card.imageSource === "uploaded" ? "用户照片" : card.imageSource === "ai" ? "AI 图" : "记录卡"}
-            </span>
-          </div>
-          <div>
-            <h3 className="text-xl font-black text-ink">{card.title}</h3>
-            <p className="mt-2 line-clamp-2 text-sm leading-6 text-zinc-700">{card.aiGeneratedText}</p>
-          </div>
-        </div>
-      </LifeCardImage>
-      <div className="space-y-3 p-5">
-        <p className="inline-flex rounded-full bg-orange-50 px-3 py-1 text-xs font-bold text-orange-700">{card.moodText}</p>
-        <div className="flex flex-wrap gap-3 text-xs font-semibold text-zinc-500">
+      <div className="relative h-48 shrink-0 overflow-hidden">
+        <LifeCardImage imageUrl={card.imageUrl} imageSource={card.imageSource} title={card.title} className="h-full w-full" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/10" />
+        <span className="absolute left-3 top-3 max-w-[60%] truncate rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-ink shadow-sm">
+          {card.category || "人生支线"}
+        </span>
+        <span className="absolute right-3 top-3 rounded-full bg-ink/80 px-3 py-1 text-xs font-bold text-white shadow-sm">
+          {imageLabel}
+        </span>
+      </div>
+      <div className="flex flex-1 flex-col gap-3 p-5">
+        <h3 className="line-clamp-2 text-lg font-black leading-6 text-ink">{card.title}</h3>
+        <p className="line-clamp-2 min-h-12 text-sm leading-6 text-zinc-600">{summary}</p>
+        <p className="w-fit rounded-full bg-orange-50 px-3 py-1 text-xs font-bold text-orange-700">{card.moodText || "平静"}</p>
+        <div className="mt-auto flex items-center justify-between gap-3 text-xs font-semibold text-zinc-500">
           <span className="inline-flex items-center gap-1">
             <Calendar size={14} />
             {formatDate(card.completedAt)}
           </span>
-          {displayLocation ? (
-            <span className="inline-flex items-center gap-1">
-              <MapPin size={14} />
+          <span className="inline-flex min-w-0 flex-1 items-center justify-end gap-1">
+            <MapPin size={14} className="shrink-0" />
+            <span className="max-w-[120px] truncate">
               {displayLocation}
             </span>
-          ) : null}
-          <span className="ml-auto inline-flex items-center gap-1 text-coral">
-            {card.imageSource === "uploaded" ? <ImageIcon size={14} /> : <Sparkles size={14} />}
-            {compact ? "查看" : "人生卡"}
           </span>
         </div>
+        <span className="inline-flex items-center gap-1 text-xs font-bold text-coral">
+          {card.imageSource === "uploaded" ? <ImageIcon size={14} /> : <Sparkles size={14} />}
+          {compact ? "查看" : "人生卡"}
+        </span>
       </div>
     </Link>
   );
