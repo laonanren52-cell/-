@@ -1,10 +1,12 @@
 import type { FormEvent } from "react";
-import { useMemo, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Plus, RefreshCw, Search, Shuffle, X } from "lucide-react";
+import { Link } from "react-router-dom";
 import { TaskCard } from "../components/TaskCard/TaskCard";
 import { useAppData } from "../services/AppDataContext";
+import { dismissTaskForToday, getTodayRecommendedTasks, refreshRecommendedTasks, replaceRecommendedTask } from "../services/recommendService";
 import { taskCategories } from "../data/presetTasks";
-import type { Difficulty } from "../types";
+import type { Difficulty, LifeTask } from "../types";
 
 const difficulties: Difficulty[] = ["轻松", "中等", "挑战"];
 
@@ -12,6 +14,7 @@ export function TaskLibrary() {
   const { tasks, addTaskToTodos, createCustomTask } = useAppData();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("全部");
+  const [recommendedTasks, setRecommendedTasks] = useState<LifeTask[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
     title: "",
@@ -32,6 +35,10 @@ export function TaskLibrary() {
     [category, query, tasks],
   );
 
+  useEffect(() => {
+    setRecommendedTasks(getTodayRecommendedTasks(tasks));
+  }, [tasks]);
+
   function submitCustomTask(event: FormEvent) {
     event.preventDefault();
     if (!form.title.trim()) return;
@@ -39,6 +46,18 @@ export function TaskLibrary() {
     addTaskToTodos(task);
     setForm({ title: "", description: "", category: "成长清单", suggestedDuration: "30 分钟", difficulty: "中等", isImportant: false });
     setShowForm(false);
+  }
+
+  function refreshRecommendations() {
+    setRecommendedTasks(refreshRecommendedTasks(tasks));
+  }
+
+  function replaceRecommendation(task: LifeTask) {
+    setRecommendedTasks((current) => replaceRecommendedTask(tasks, task, current));
+  }
+
+  function dismissRecommendation(task: LifeTask) {
+    setRecommendedTasks((current) => dismissTaskForToday(tasks, task, current));
   }
 
   return (
@@ -74,6 +93,72 @@ export function TaskLibrary() {
               </button>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="glass-card p-6">
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-bold text-coral">今日随机小支线</p>
+            <h2 className="section-title mt-1">地球 Online 今日刷新</h2>
+            <p className="mt-2 text-sm leading-7 text-zinc-600">
+              每天保留一组 4 条任务，混合轻松 / 中等 / 挑战。已完成任务会降低推荐权重，不感兴趣的任务今天不会再出现。
+            </p>
+          </div>
+          <button type="button" className="secondary-button shrink-0" onClick={refreshRecommendations}>
+            <Shuffle size={18} />
+            换一批
+          </button>
+        </div>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {recommendedTasks.map((task) => (
+            <article key={task.id} className="overflow-hidden rounded-3xl bg-white shadow-sm">
+              <div className="flex items-start gap-3 p-4">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-50 text-2xl">
+                  {task.icon || "✨"}
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-bold text-orange-700">{task.category}</p>
+                  <h3 className="mt-1 line-clamp-2 text-base font-black leading-6 text-ink">{task.title}</h3>
+                </div>
+              </div>
+              <div className="space-y-3 px-4 pb-4">
+                <p className="line-clamp-2 text-sm leading-6 text-zinc-600">{task.description}</p>
+                <p className="line-clamp-2 text-xs font-semibold leading-5 text-zinc-500">
+                  <span className="text-orange-700">解锁：{task.achievementName}</span>
+                  {task.unlockText ? ` · ${task.unlockText}` : ""}
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {(task.tags ?? []).slice(0, 3).map((tag) => (
+                    <span key={tag} className="rounded-full bg-zinc-100 px-2 py-1 text-[11px] font-semibold text-zinc-500">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <div className="flex items-center justify-between gap-2 text-xs font-semibold text-zinc-400">
+                  <span>{task.difficulty} · {task.suggestedDuration}</span>
+                  {task.status === "completed" ? <span className="text-emerald-600">已完成</span> : null}
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Link to={`/checkin/${task.id}`} className="primary-button justify-center px-3 py-2 text-xs">
+                    去打卡
+                  </Link>
+                  <button className="secondary-button justify-center px-3 py-2 text-xs" type="button" onClick={() => addTaskToTodos(task)}>
+                    <Plus size={14} />
+                    待办
+                  </button>
+                  <button className="secondary-button justify-center px-3 py-2 text-xs" type="button" onClick={() => replaceRecommendation(task)}>
+                    <RefreshCw size={14} />
+                    换掉这条
+                  </button>
+                  <button className="secondary-button justify-center px-3 py-2 text-xs text-zinc-500" type="button" onClick={() => dismissRecommendation(task)}>
+                    <X size={14} />
+                    不感兴趣
+                  </button>
+                </div>
+              </div>
+            </article>
+          ))}
         </div>
       </section>
 

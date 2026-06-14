@@ -36,6 +36,11 @@ export type LifeTask = {
   difficulty: Difficulty;
   description: string;
   suggestedDuration: string;
+  icon?: string;
+  achievementName?: string;
+  unlockText?: string;
+  tags?: string[];
+  isPreset?: true;
   status: TaskStatus;
   isCustom: boolean;
   isImportant?: boolean;

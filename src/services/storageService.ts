@@ -30,7 +30,7 @@ export function initializeStorage() {
 
 export function getTasks() {
   initializeStorage();
-  return read<LifeTask[]>(keys.tasks, seededTasks).map(normalizeTask);
+  return mergeSeededTasks(read<LifeTask[]>(keys.tasks, seededTasks)).map(normalizeTask);
 }
 
 export function saveTasks(value: LifeTask[]) {
@@ -131,6 +131,25 @@ function normalizeTask(task: any): LifeTask {
     ...task,
     status: task.status === "wishlist" ? "todo" : task.status ?? "preset",
   };
+}
+
+function mergeSeededTasks(storedTasks: LifeTask[]) {
+  const merged = storedTasks.map((task) => {
+    const seeded = seededTasks.find((item) => item.id === task.id || item.title === task.title);
+    return seeded
+      ? {
+          ...seeded,
+          ...task,
+          icon: task.icon ?? seeded.icon,
+          achievementName: task.achievementName ?? seeded.achievementName,
+          unlockText: task.unlockText ?? seeded.unlockText,
+        }
+      : task;
+  });
+  const storedKeys = new Set(merged.map((task) => task.id));
+  const storedTitles = new Set(merged.map((task) => task.title));
+  const missingSeeded = seededTasks.filter((task) => !storedKeys.has(task.id) && !storedTitles.has(task.title));
+  return [...merged, ...missingSeeded];
 }
 
 function normalizeTodo(item: any): TodoItem {
