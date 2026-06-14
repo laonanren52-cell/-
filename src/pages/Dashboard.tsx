@@ -1,16 +1,23 @@
 import type { ReactNode } from "react";
-import { ArrowRight, CalendarHeart, CheckCircle2, Clock3, ListChecks, PenLine, Sparkles } from "lucide-react";
+import { ArrowRight, CalendarHeart, CheckCircle2, Clock3, ListChecks, PenLine, Sparkles, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useAppData } from "../services/AppDataContext";
 import { LifeCardPreview } from "../components/LifeCard/LifeCardPreview";
-import { daysBetween, formatDate, isInPeriod } from "../utils/date";
+import { useAppData } from "../services/AppDataContext";
+import { buildReviewStats, getCardsByPeriod, getPreviousPeriodCards, pickRepresentativeCards } from "../services/reviewService";
+import { daysBetween, formatDate } from "../utils/date";
 
 export function Dashboard() {
   const { profile, todos, lifeCards, anniversaries } = useAppData();
   const today = new Date().toISOString().slice(0, 10);
   const todayTodos = todos.filter((item) => item.date === today && item.status === "todo").slice(0, 5);
-  const weekCards = lifeCards.filter((card) => isInPeriod(card.completedAt, "weekly"));
-  const recentCards = lifeCards.slice().sort((a, b) => +new Date(b.completedAt) - +new Date(a.completedAt)).slice(0, 4);
+  const weekCards = getCardsByPeriod(lifeCards, "weekly");
+  const previousWeekCards = getPreviousPeriodCards(lifeCards, "weekly");
+  const weekStats = buildReviewStats(weekCards, previousWeekCards, "weekly");
+  const recentCards = lifeCards
+    .slice()
+    .sort((a, b) => +new Date(b.completedAt || b.createdAt) - +new Date(a.completedAt || a.createdAt))
+    .slice(0, 4);
+  const representativeCard = pickRepresentativeCards(lifeCards)[0];
   const recentAnniversary = anniversaries
     .slice()
     .sort((a, b) => Math.abs(daysBetween(a.date)) - Math.abs(daysBetween(b.date)))[0];
@@ -57,7 +64,7 @@ export function Dashboard() {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-5 lg:grid-cols-[0.9fr_1.1fr]">
+      <section className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[0.9fr_1.1fr]">
         <div className="glass-card p-6">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="section-title">今日重点</h2>
@@ -76,7 +83,9 @@ export function Dashboard() {
                 <ArrowRight className="ml-auto text-zinc-400" size={17} />
               </Link>
             )) : (
-              <div className="rounded-2xl bg-white/75 p-6 text-sm leading-7 text-zinc-500">今天还没有待办。去任务库挑一个轻量支线，或者自己写一件想完成的小事。</div>
+              <div className="rounded-2xl bg-white/75 p-6 text-sm leading-7 text-zinc-500">
+                今天还没有待办。去任务库挑一个轻量支线，或者自己写一件想完成的小事。
+              </div>
             )}
           </div>
         </div>
@@ -84,7 +93,7 @@ export function Dashboard() {
         <div className="glass-card p-6">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="section-title">复盘入口</h2>
-            <Link to="/reviews" className="text-sm font-bold text-coral">查看全部</Link>
+            <Link to="/reviews?period=weekly" className="text-sm font-bold text-coral">查看轨迹</Link>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
             {[
@@ -93,15 +102,43 @@ export function Dashboard() {
               ["月复盘", "monthly"],
               ["季复盘", "quarterly"],
               ["年复盘", "yearly"],
-            ].map(([label]) => (
-              <Link key={label} to="/reviews" className="rounded-2xl bg-white/75 p-4 text-center text-sm font-black text-ink transition hover:-translate-y-0.5 hover:bg-white">
+            ].map(([label, period]) => (
+              <Link
+                key={period}
+                to={`/reviews?period=${period}`}
+                className="rounded-2xl bg-white/80 p-4 text-center text-sm font-black text-ink transition hover:-translate-y-0.5 hover:bg-white"
+              >
                 {label}
               </Link>
             ))}
           </div>
-          <p className="mt-5 rounded-2xl bg-orange-50 p-4 text-sm leading-7 text-orange-900">
-            复盘会根据你真实完成的卡片总结，不再只是模板式鼓励。
-          </p>
+
+          {lifeCards.length ? (
+            <div className="mt-5 grid grid-cols-1 gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+              <div className="rounded-2xl bg-orange-50 p-5">
+                <div className="flex items-center gap-2 text-sm font-black text-orange-900">
+                  <TrendingUp size={18} />
+                  本周迷你复盘
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <MiniMetric label="本周完成" value={`${weekStats.totalCards} 张`} />
+                  <MiniMetric label="较上周" value={weekStats.growthRate > 0 ? `+${weekStats.growthRate}` : String(weekStats.growthRate)} />
+                  <MiniMetric label="高频分类" value={weekStats.topCategory} wide />
+                </div>
+              </div>
+              <div className="min-w-0">
+                {representativeCard ? (
+                  <LifeCardPreview card={representativeCard} compact />
+                ) : (
+                  <div className="rounded-2xl bg-white/75 p-5 text-sm leading-7 text-zinc-500">最近代表卡会出现在这里。</div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <p className="mt-5 rounded-2xl bg-orange-50 p-4 text-sm leading-7 text-orange-900">
+              完成一次打卡后，这里会生成你的生活复盘。
+            </p>
+          )}
         </div>
       </section>
 
@@ -124,6 +161,15 @@ function StatCard({ icon, label, value }: { icon: ReactNode; label: string; valu
       <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-100 text-orange-700">{icon}</div>
       <p className="text-xs font-bold text-zinc-400">{label}</p>
       <p className="mt-1 text-2xl font-black text-ink">{value}</p>
+    </div>
+  );
+}
+
+function MiniMetric({ label, value, wide = false }: { label: string; value: string; wide?: boolean }) {
+  return (
+    <div className={`rounded-2xl bg-white/80 p-3 ${wide ? "col-span-2" : ""}`}>
+      <p className="text-xs font-bold text-zinc-400">{label}</p>
+      <p className="mt-1 truncate text-lg font-black text-ink">{value}</p>
     </div>
   );
 }

@@ -28,9 +28,9 @@ export function ReviewPanel({ report }: { report: ReviewReport }) {
           <p className="text-sm font-bold text-white/70">下一步建议</p>
           <div className="mt-3 grid gap-2">
             {report.nextSuggestions.length ? report.nextSuggestions.map((suggestion) => (
-              <p key={suggestion} className="flex items-start gap-2 text-sm leading-6">
+              <p key={suggestion.title} className="flex items-start gap-2 text-sm leading-6">
                 <ArrowRight className="mt-1 shrink-0" size={16} />
-                <span className="break-words">{suggestion}</span>
+                <span className="break-words">{suggestion.title}：{suggestion.action}</span>
               </p>
             )) : (
               <p className="text-sm text-white/70">正在生成更贴近你记录的建议...</p>

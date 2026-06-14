@@ -122,6 +122,38 @@ export type ReviewSettings = {
   yearly: true;
 };
 
+export type ReviewStats = {
+  totalCards: number;
+  previousTotalCards: number;
+  growthRate: number;
+  topCategory: string;
+  topMood: string;
+  mostActiveDay: string;
+  categoryDistribution: {
+    category: string;
+    count: number;
+  }[];
+  moodDistribution: {
+    mood: string;
+    count: number;
+  }[];
+  dailyTrend: {
+    date: string;
+    count: number;
+  }[];
+  locationDistribution: {
+    location: string;
+    count: number;
+  }[];
+  representativeCards: LifeCard[];
+};
+
+export type ReviewSuggestion = {
+  title: string;
+  reason: string;
+  action: string;
+};
+
 export type ReviewSummaryInput = {
   tasks: LifeTask[];
   cards: LifeCard[];
@@ -137,7 +169,8 @@ export type ReviewReport = {
   topCategory?: string;
   representativeCards: LifeCard[];
   aiSummary: string;
-  nextSuggestions: string[];
+  nextSuggestions: ReviewSuggestion[];
+  stats?: ReviewStats;
 };
 
 export type CheckInInput = {

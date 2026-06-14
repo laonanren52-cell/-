@@ -1,4 +1,5 @@
-import type { AIApiConfig, AIPreferences, LifeCard, LifeTask, ReviewPeriod } from "../types";
+import type { AIApiConfig, AIPreferences, LifeCard, LifeTask, ReviewPeriod, ReviewStats, ReviewSuggestion } from "../types";
+import { classifyMood } from "./reviewService";
 
 export type LifeCardAiInput = {
   title: string;
@@ -45,42 +46,53 @@ export async function generateCardImage(input: ImageGenerationInput) {
 
 export async function generateReviewSummary(input: {
   cards: LifeCard[];
-  periodLabel: string;
+  periodLabel?: string;
   periodType: ReviewPeriod;
-  preferences: AIPreferences;
+  stats?: ReviewStats;
+  preferences?: AIPreferences;
+  aiPreferences?: AIPreferences;
   aiMode: "mock" | "api";
 }) {
-  const prompt = buildReviewPrompt(input.cards, input.periodLabel, input.periodType, input.preferences);
+  const preferences = input.preferences || input.aiPreferences || defaultPreferences;
+  const periodLabel = input.periodLabel || getReadablePeriod(input.periodType);
+  if (!input.cards.length) {
+    return "这个周期还没有足够内容生成复盘。完成一次打卡后，我会帮你把这些生活片段整理成阶段总结。";
+  }
+
+  const prompt = buildReviewPrompt(input.cards, periodLabel, input.periodType, preferences, input.stats);
   if (canUseTextApi(input.aiMode)) {
     try {
-      return await callTextApi(prompt, input.preferences);
+      return await callTextApi(prompt, preferences);
     } catch (error) {
       console.warn("[AI Review] failed, falling back to mock.", error);
     }
   }
-  return mockReviewSummary(input.cards, input.periodLabel, input.preferences);
+  return mockReviewSummary(input.cards, periodLabel, preferences, input.stats);
 }
 
 export async function generateNextTaskSuggestions(input: {
   cards: LifeCard[];
-  tasks: LifeTask[];
-  preferences: AIPreferences;
+  tasks?: LifeTask[];
+  periodType?: ReviewPeriod;
+  stats?: ReviewStats;
+  preferences?: AIPreferences;
+  aiPreferences?: AIPreferences;
   aiMode: "mock" | "api";
-}) {
-  const prompt = buildSuggestionPrompt(input.cards, input.tasks, input.preferences);
+}): Promise<ReviewSuggestion[]> {
+  const preferences = input.preferences || input.aiPreferences || defaultPreferences;
+  if (!input.cards.length) return [];
+
+  const prompt = buildSuggestionPrompt(input.cards, input.tasks || [], preferences, input.stats, input.periodType);
   if (canUseTextApi(input.aiMode)) {
     try {
-      const text = await callTextApi(prompt, input.preferences);
-      return text
-        .split(/\n|；|;/)
-        .map((item: string) => item.replace(/^[-\d.、\s]+/, "").trim())
-        .filter(Boolean)
-        .slice(0, 4);
+      const text = await callTextApi(prompt, preferences);
+      const parsed = parseSuggestions(text);
+      if (parsed.length) return parsed.slice(0, 3);
     } catch (error) {
       console.warn("[AI Suggestions] failed, falling back to mock.", error);
     }
   }
-  return mockNextTaskSuggestions(input.cards);
+  return mockNextTaskSuggestions(input.cards, input.stats);
 }
 
 export async function testTextApiConnection() {
@@ -88,11 +100,7 @@ export async function testTextApiConnection() {
   if (!config.textApiBase || !config.textApiKey || !config.textModel) {
     throw new Error("请先填写文本 API Base、Key 和 Model。");
   }
-  return callTextApi("请只回复：LifeQuest 文本 API 已连接。", {
-    empathy: 50,
-    humor: 10,
-    objectivity: 80,
-  });
+  return callTextApi("请只回复：LifeQuest 文本 API 已连接。", defaultPreferences);
 }
 
 export async function testImageApiConnection() {
@@ -150,36 +158,58 @@ export function getAIErrorMessage(status: number, fallback?: string) {
   if (status === 403) return "账号权限、实名认证或额度不足，请检查平台账户状态。";
   if (status === 404) return "接口地址或模型名错误。请检查 API Base 是否只填写到 /v1，以及模型名是否正确。";
   if (status === 429) return "调用过于频繁，请稍后再试。";
-  if (status >= 500) return "AI 生图服务暂时异常，请稍后重试。";
-  return "AI 生图服务暂时异常，请稍后重试。";
+  if (status >= 500) return "AI 服务暂时异常，请稍后重试。";
+  return "AI 服务暂时异常，请稍后重试。";
 }
 
-function buildReviewPrompt(cards: LifeCard[], periodLabel: string, periodType: ReviewPeriod, preferences: AIPreferences) {
+function buildReviewPrompt(
+  cards: LifeCard[],
+  periodLabel: string,
+  periodType: ReviewPeriod,
+  preferences: AIPreferences,
+  stats?: ReviewStats,
+) {
   const events = cards
-    .map((card) => `- ${card.title}｜地点：${card.locationName || card.locationAddress || card.location || "未记录"}｜情绪：${card.moodText || "未填写"}｜感受：${card.note || "未填写"}`)
+    .map((card) => {
+      const date = new Date(card.completedAt || card.createdAt).toLocaleDateString("zh-CN");
+      return `- ${date}｜${card.title}｜分类：${card.category || "未分类"}｜地点：${card.locationName || card.locationAddress || card.location || "未记录"}｜情绪：${card.moodText || "未填写"}｜感受：${card.note || "未填写"}`;
+    })
     .join("\n");
+
   return [
     `请为 LifeQuest 用户生成${periodLabel}。周期类型：${periodType}。`,
+    `统计：本周期 ${stats?.totalCards ?? cards.length} 张卡；较上一周期 ${formatChange(stats?.growthRate ?? 0)}；高频分类 ${stats?.topCategory || "暂无"}；常见情绪 ${stats?.topMood || "暂无"}；活跃时段 ${stats?.mostActiveDay || "暂无"}。`,
+    `分类分布：${stats?.categoryDistribution.map((item) => `${item.category}${item.count}`).join("、") || "暂无"}。`,
+    `情绪分布：${stats?.moodDistribution.map((item) => `${item.mood}${item.count}`).join("、") || "暂无"}。`,
     `AI偏好：共情 ${preferences.empathy}/100，幽默 ${preferences.humor}/100，客观 ${preferences.objectivity}/100。`,
-    "必须基于下面真实完成的任务，不要泛泛总结：",
-    events || "本周期没有记录。",
-    "要求：像一个倾听者；提到具体做过的事和地点；如果出现疲惫、难过、孤独、紧张等情绪，请温柔回应，不要说教；100-180 字。",
+    "必须基于下面真实完成的卡片，不要泛泛地说成长、加油或变优秀。",
+    events,
+    "要求：提到 2-4 个具体任务；如果出现难过、孤独、疲惫、焦虑等情绪，先承认感受，再温和反馈，不要说教；100-180 字。",
   ].join("\n");
 }
 
-function buildSuggestionPrompt(cards: LifeCard[], tasks: LifeTask[], preferences: AIPreferences) {
+function buildSuggestionPrompt(
+  cards: LifeCard[],
+  tasks: LifeTask[],
+  preferences: AIPreferences,
+  stats?: ReviewStats,
+  periodType?: ReviewPeriod,
+) {
   const events = cards
-    .slice(0, 8)
-    .map((card) => `- ${card.title}｜${card.category || "未分类"}｜${card.moodText || "未填写"}｜${card.locationName || card.location || "未记录"}`)
+    .slice(0, 10)
+    .map((card) => `- ${card.title}｜${card.category || "未分类"}｜${classifyMood(card.moodText)}｜${card.locationName || card.location || "未记录"}`)
     .join("\n");
-  const taskTitles = tasks.map((task) => task.title).join("、");
+  const taskTitles = tasks.slice(0, 45).map((task) => task.title).join("、");
+
   return [
-    "请根据用户已完成的人生任务，给出 3-4 条下一步建议。",
+    "请根据用户已完成的人生任务，给出 3 条下一步建议。",
+    `周期：${periodType || "未指定"}；高频分类：${stats?.topCategory || "暂无"}；常见情绪：${stats?.topMood || "暂无"}。`,
     `AI偏好：共情 ${preferences.empathy}/100，幽默 ${preferences.humor}/100，客观 ${preferences.objectivity}/100。`,
     "已完成事件：",
-    events || "暂无。",
-    `可参考任务池：${taskTitles}`,
-    "要求：建议要有连续性，避免重复已完成事件，不要模板化；每条建议一行。",
+    events,
+    `可参考任务池：${taskTitles || "暂无"}`,
+    "规则：建议必须具体可执行；如果独处多，可以推荐轻社交或继续温和独处；如果成长多，推荐恢复或复盘；如果负面情绪多，推荐低强度治愈任务；不要每次都推荐读书或运动。",
+    "输出格式必须每行一条：建议标题｜为什么推荐｜可执行步骤。",
   ].join("\n");
 }
 
@@ -234,7 +264,7 @@ async function callTextApi(prompt: string, preferences: AIPreferences) {
       messages: [
         {
           role: "system",
-          content: `你温柔、具体、不过度鸡汤。风格参数：共情=${preferences.empathy}，幽默=${preferences.humor}，客观=${preferences.objectivity}。`,
+          content: `你温柔、具体、不空泛。风格参数：共情=${preferences.empathy}，幽默=${preferences.humor}，客观=${preferences.objectivity}。`,
         },
         { role: "user", content: prompt },
       ],
@@ -319,43 +349,141 @@ function mockLifeCardText(input: LifeCardAiInput) {
   const humorous = input.preferences.humor >= 60;
   const opening = objective
     ? `这次记录的核心，是你完成了「${input.title}」。`
-    : `关于「${input.title}」这件事，你没有只是匆匆做完，而是真的把当时的自己留了下来。`;
+    : `关于「${input.title}」这件事，你没有只是匆匆做完，而是真的把当时的自己留下来了。`;
   const place = input.locationName ? `地点也很具体：${input.locationName}。` : "";
   const detail = `从你的感受里能看见：${input.note || "这件事对你有一点特别"}。情绪是：${input.moodText || "平静"}。`;
   const tail = humorous ? "如果生活有存档点，这一刻大概会闪一下小光标。" : "这不是泛泛的“完成”，而是你和这一天认真打过一次照面。";
   return `${opening}${place}${detail}${tail}`;
 }
 
-function mockReviewSummary(cards: LifeCard[], periodLabel: string, preferences: AIPreferences) {
-  if (!cards.length) return `${periodLabel}暂时没有新的记录。空白也不是失败，它只是提醒你：下一条支线可以从一件很小、很容易开始的事出发。`;
+function mockReviewSummary(cards: LifeCard[], periodLabel: string, preferences: AIPreferences, stats?: ReviewStats) {
+  if (!cards.length) return `${periodLabel}暂时没有新的记录。空白不是失败，它只是提醒你：下一条支线可以从一件很小、很容易开始的事出发。`;
+
   const titles = cards.map((card) => `「${card.title}」`).slice(0, 4).join("、");
-  const moods = cards.map((card) => card.moodText).filter(Boolean).slice(0, 4).join("、");
   const places = cards.map((card) => card.locationName || card.locationAddress || card.location).filter(Boolean).slice(0, 3).join("、");
-  const hasHeavyMood = /累|难过|孤独|紧张|焦虑|低落|委屈|烦/.test(`${moods} ${cards.map((card) => card.note).join(" ")}`);
+  const moodText = cards.map((card) => card.moodText).filter(Boolean).join(" ");
+  const noteText = cards.map((card) => card.note).filter(Boolean).join(" ");
+  const hasHeavyMood = /难过|孤独|紧张|焦虑|低落|委屈|疲惫|累/.test(`${moodText} ${noteText}`);
+  const category = stats?.topCategory && stats.topCategory !== "暂无" ? `高频分类集中在「${stats.topCategory}」。` : "";
+  const change = stats ? `这一周期你留下了 ${stats.totalCards} 张人生卡，较上一周期${formatChange(stats.growthRate)}。` : "";
+  const placeText = places ? `地点也更清楚了：${places}。` : "";
   const empathyLine = preferences.empathy > 60
     ? hasHeavyMood
-      ? "里面有些情绪并不轻，但你还是把它记录下来了，这本身就是一种照顾自己的方式。"
+      ? "里面有些情绪并不轻，但你还是把它记录了下来，这本身就是一种照顾自己的方式。"
       : "这些小事不喧哗，却很像你在认真生活的证据。"
     : "从事件分布看，你这段时间主要在推进可执行的小目标。";
-  return `这段时间，你留下了 ${titles}。${places ? `地点也变得更清楚：${places}。` : ""}${empathyLine}${moods ? ` 情绪关键词大概是：${moods}。` : ""}下一步不用突然改变很多，顺着已经发生的事情，再多走半步就好。`;
+
+  return `${change}你具体完成了 ${titles}。${placeText}${category}${empathyLine}下一步不用突然改变很多，顺着已经发生的事情，再多走半步就好。`;
 }
 
-function mockNextTaskSuggestions(cards: LifeCard[]) {
-  if (!cards.length) return ["从一件 15 分钟内能完成的小事开始，比如拍一张今天的天空。"];
-  const suggestions = cards.slice(0, 5).flatMap((card) => {
-    const title = card.title;
-    if (/天空|晚霞|风景|照片|拍/.test(title)) return ["连续记录三天的天空变化", "给这张照片写一句当时的心情", "下次拍一个让你觉得平静的角落"];
-    if (/一个人|独处|书店|火锅|散步|日落|吃饭/.test(title)) return ["试试一个人去喝一杯饮品", "记录一次独处时最放松的瞬间", "下次一个人去书店坐 20 分钟"];
-    if (/朋友|父母|问候|感谢|信|关系/.test(title)) return ["和那个人多聊两句近况", "记录一次重新连接后的感受", "想一想还有没有一个你想念但很久没联系的人"];
-    return [`沿着「${title}」再做一个更轻的小版本`];
+function mockNextTaskSuggestions(cards: LifeCard[], stats?: ReviewStats): ReviewSuggestion[] {
+  const text = `${cards.map((card) => `${card.title} ${card.category || ""} ${card.moodText || ""} ${card.note || ""}`).join(" ")} ${stats?.topCategory || ""} ${stats?.topMood || ""}`;
+  const suggestions: ReviewSuggestion[] = [];
+
+  if (/孤独|难过|疲惫|焦虑|紧张|低落|累/.test(text)) {
+    suggestions.push({
+      title: "做一次低强度恢复支线",
+      reason: "这段记录里出现了比较消耗的情绪，下一步先降低难度更合适。",
+      action: "今天只做 10 分钟整理桌面、热饮或短散步，完成后写一句真实感受。",
+    });
+  }
+
+  if (/独处|一个人|书店|散步|吃饭|独处清单/.test(text)) {
+    suggestions.push({
+      title: "发起一次轻社交连接",
+      reason: "你已经有不少和自己相处的记录，可以温和地把连接感补回来一点。",
+      action: "给一个熟悉的人发一句近况问候，不需要展开长聊。",
+    });
+  }
+
+  if (/天空|照片|观察|日落|风景|城市|生活观察/.test(text)) {
+    suggestions.push({
+      title: "连续记录一个生活角落",
+      reason: "你对生活细节的观察已经出现了，连续记录会让轨迹更清楚。",
+      action: "选同一个窗边、路口或天空，连续两天各拍一张并写一句变化。",
+    });
+  }
+
+  if (/成长|学习|完成|成就|做到/.test(text)) {
+    suggestions.push({
+      title: "给成长任务配一次复原",
+      reason: "推进之后也需要收束，否则成就感容易被疲惫盖住。",
+      action: "安排 20 分钟无目标休息，结束后写下今天最值得保留的一件事。",
+    });
+  }
+
+  suggestions.push(
+    {
+      title: "补一张今天的生活切片",
+      reason: "复盘会因为具体记录变得更像你，而不是模板总结。",
+      action: "在今天结束前拍一张眼前的小物或路上的画面，配一句当下心情。",
+    },
+    {
+      title: "解锁一个很小的新地点",
+      reason: "换一个安全、熟悉附近的小场景，能给生活轨迹增加一点新鲜感。",
+      action: "白天去附近一家便利店、咖啡店或公园入口停留 10 分钟。",
+    },
+  );
+
+  return dedupeSuggestions(suggestions).slice(0, 3);
+}
+
+function parseSuggestions(text: string): ReviewSuggestion[] {
+  const lines = text
+    .split(/\n+/)
+    .map((line) => line.replace(/^[-*\d.、\s]+/, "").trim())
+    .filter(Boolean);
+
+  return lines
+    .map((line) => {
+      const parts = line.split(/[｜|]/).map((part) => part.trim()).filter(Boolean);
+      if (parts.length >= 3) {
+        return { title: parts[0], reason: parts[1], action: parts.slice(2).join("，") };
+      }
+      return {
+        title: parts[0] || line.slice(0, 24),
+        reason: "这条建议来自你最近完成的人生卡片。",
+        action: line,
+      };
+    })
+    .filter((item) => item.title && item.action);
+}
+
+function dedupeSuggestions(suggestions: ReviewSuggestion[]) {
+  const seen = new Set<string>();
+  return suggestions.filter((item) => {
+    if (seen.has(item.title)) return false;
+    seen.add(item.title);
+    return true;
   });
-  return [...new Set(suggestions)].slice(0, 4);
 }
 
 function inferImageScene(title: string) {
-  if (/吃饭|火锅|餐/.test(title)) return "一个年轻人独自坐在小餐馆靠窗的位置吃饭，桌上有简单热气的饭菜，窗外是柔和的城市夜色";
-  if (/天空|晚霞|风景|拍/.test(title)) return "一张被认真看见的天空或晚霞，前景有一点生活场景，像随手记录但很珍贵";
+  if (/吃饭|火锅|餐|咖啡|奶茶/.test(title)) return "一个年轻人坐在小餐馆靠窗的位置吃饭，桌上有简单热气的食物，窗外是柔和的城市街景";
+  if (/天空|晚霞|风景|照片|拍/.test(title)) return "一张被认真看见的天空或晚霞，前景有一点生活场景，像随手记录但很珍贵";
   if (/书店|读书/.test(title)) return "一个人在温暖书店的书架之间慢慢翻书，午后光线落在书页上";
-  if (/父母|朋友|问候|信|感谢/.test(title)) return "温暖的人际连接场景，桌面有信纸或手机消息，光线柔和";
+  if (/父母|朋友|问候|信|感谢|关系/.test(title)) return "温暖的人际连接场景，桌面有信纸或手机消息，光线柔和";
   return `围绕「${title}」的真实生活瞬间`;
 }
+
+function getReadablePeriod(period: ReviewPeriod) {
+  const labels: Record<ReviewPeriod, string> = {
+    daily: "日复盘",
+    weekly: "周复盘",
+    monthly: "月复盘",
+    quarterly: "季复盘",
+    yearly: "年复盘",
+  };
+  return labels[period];
+}
+
+function formatChange(value: number) {
+  if (value > 0) return `+${value}`;
+  return String(value);
+}
+
+const defaultPreferences: AIPreferences = {
+  empathy: 50,
+  humor: 10,
+  objectivity: 80,
+};
