@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { ArrowRight, CalendarHeart, CheckCircle2, Clock3, ListChecks, Sparkles } from "lucide-react";
+import { ArrowRight, CalendarHeart, CheckCircle2, Clock3, ListChecks, PenLine, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAppData } from "../services/AppDataContext";
 import { LifeCardPreview } from "../components/LifeCard/LifeCardPreview";
@@ -38,6 +38,10 @@ export function Dashboard() {
             <Link to="/tasks" className="secondary-button">
               <Sparkles size={18} />
               快速去打卡
+            </Link>
+            <Link to="/diary?autoFocus=1" className="secondary-button">
+              <PenLine size={18} />
+              写小日记
             </Link>
           </div>
         </div>

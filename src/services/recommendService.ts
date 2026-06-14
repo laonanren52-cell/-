@@ -4,6 +4,11 @@ const recommendationKey = "lifequest.dailyRecommendations";
 const dismissedKey = "lifequest.dismissedRecommendations";
 const recommendationCount = 4;
 
+type RecommendOptions = {
+  count?: number;
+  category?: string;
+};
+
 type StoredRecommendations = {
   date: string;
   taskIds: string[];
@@ -14,32 +19,38 @@ type StoredDismissed = {
   taskIds: string[];
 };
 
-export function getTodayRecommendedTasks(tasks: LifeTask[]) {
+export function getTodayRecommendedTasks(tasks: LifeTask[], options: RecommendOptions = {}) {
   const today = getTodayKey();
-  const stored = readStored<StoredRecommendations>(recommendationKey);
+  const scopedTasks = applyOptions(tasks, options);
+  const stored = readStored<StoredRecommendations>(getRecommendationKey(options));
   const dismissed = getTodayDismissedTaskIds();
+  const count = options.count ?? recommendationCount;
 
   if (stored?.date === today) {
     const fromStorage = stored.taskIds
-      .map((id) => tasks.find((task) => task.id === id))
+      .map((id) => scopedTasks.find((task) => task.id === id))
       .filter((task): task is LifeTask => Boolean(task && !dismissed.includes(task.id)));
-    if (fromStorage.length === recommendationCount) return fromStorage;
+    if (fromStorage.length === count) return fromStorage;
   }
 
-  return refreshRecommendedTasks(tasks);
+  return refreshRecommendedTasks(tasks, options);
 }
 
-export function refreshRecommendedTasks(tasks: LifeTask[]) {
+export function refreshRecommendedTasks(tasks: LifeTask[], options: RecommendOptions = {}) {
   const dismissed = getTodayDismissedTaskIds();
-  const recommendations = pickRecommendedTasks(tasks.filter((task) => !dismissed.includes(task.id)));
-  saveRecommendations(recommendations);
+  const recommendations = pickRecommendedTasks(
+    applyOptions(tasks, options).filter((task) => !dismissed.includes(task.id)),
+    [],
+    options.count ?? recommendationCount,
+  );
+  saveRecommendations(recommendations, options);
   return recommendations;
 }
 
-export function replaceRecommendedTask(tasks: LifeTask[], current: LifeTask, currentRecommendations: LifeTask[]) {
+export function replaceRecommendedTask(tasks: LifeTask[], current: LifeTask, currentRecommendations: LifeTask[], options: RecommendOptions = {}) {
   const dismissed = getTodayDismissedTaskIds();
   const keep = currentRecommendations.filter((task) => task.id !== current.id);
-  const candidates = tasks.filter((task) => {
+  const candidates = applyOptions(tasks, options).filter((task) => {
     if (task.id === current.id) return false;
     if (dismissed.includes(task.id)) return false;
     if (keep.some((item) => item.id === task.id)) return false;
@@ -47,14 +58,42 @@ export function replaceRecommendedTask(tasks: LifeTask[], current: LifeTask, cur
   });
   const [replacement] = pickRecommendedTasks(candidates, keep, 1);
   const next = replacement ? keepRecommendedOrder(currentRecommendations, current.id, replacement) : keep;
-  saveRecommendations(next);
+  saveRecommendations(next, options);
   return next;
 }
 
-export function dismissTaskForToday(tasks: LifeTask[], current: LifeTask, currentRecommendations: LifeTask[]) {
+export function dismissTaskForToday(tasks: LifeTask[], current: LifeTask, currentRecommendations: LifeTask[], options: RecommendOptions = {}) {
   const dismissed = getTodayDismissedTaskIds();
   saveDismissed([...new Set([...dismissed, current.id])]);
-  return replaceRecommendedTask(tasks, current, currentRecommendations);
+  return replaceRecommendedTask(tasks, current, currentRecommendations, options);
+}
+
+export function getRandomTasks(tasks: LifeTask[], options: RecommendOptions = {}) {
+  return refreshRecommendedTasks(tasks, options);
+}
+
+export function replaceOneRandomTask(currentTasks: LifeTask[], allTasks: LifeTask[], targetTaskId: string, options: RecommendOptions = {}) {
+  const target = currentTasks.find((task) => task.id === targetTaskId);
+  return target ? replaceRecommendedTask(allTasks, target, currentTasks, options) : currentTasks;
+}
+
+export function filterCompletedTasks(tasks: LifeTask[], completedCards: Array<{ taskId?: string; title?: string }>) {
+  const completedIds = new Set(completedCards.map((card) => card.taskId).filter(Boolean));
+  const completedTitles = new Set(completedCards.map((card) => card.title).filter(Boolean));
+  return tasks.filter((task) => !completedIds.has(task.id) && !completedTitles.has(task.title));
+}
+
+export function getTodayHiddenTaskIds() {
+  return getTodayDismissedTaskIds();
+}
+
+export function hideTaskForToday(taskId: string) {
+  const dismissed = getTodayDismissedTaskIds();
+  saveDismissed([...new Set([...dismissed, taskId])]);
+}
+
+export function resetTodayRandomTasks(options: RecommendOptions = {}) {
+  localStorage.removeItem(getRecommendationKey(options));
 }
 
 function pickRecommendedTasks(tasks: LifeTask[], existing: LifeTask[] = [], count = recommendationCount) {
@@ -90,11 +129,22 @@ function keepRecommendedOrder(currentRecommendations: LifeTask[], currentId: str
   return currentRecommendations.map((task) => (task.id === currentId ? replacement : task));
 }
 
-function saveRecommendations(tasks: LifeTask[]) {
-  writeStored<StoredRecommendations>(recommendationKey, {
+function saveRecommendations(tasks: LifeTask[], options: RecommendOptions = {}) {
+  writeStored<StoredRecommendations>(getRecommendationKey(options), {
     date: getTodayKey(),
     taskIds: tasks.map((task) => task.id),
   });
+}
+
+function applyOptions(tasks: LifeTask[], options: RecommendOptions) {
+  if (!options.category || options.category === "全部") return tasks;
+  return tasks.filter((task) => task.category === options.category);
+}
+
+function getRecommendationKey(options: RecommendOptions) {
+  return options.category && options.category !== "全部"
+    ? `${recommendationKey}.${options.category}`
+    : recommendationKey;
 }
 
 function getTodayDismissedTaskIds() {

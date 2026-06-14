@@ -2,6 +2,7 @@ import { createContext, useContext, useMemo, useState } from "react";
 import { generateCardImage, generateLifeCardText } from "./aiService";
 import {
   getAnniversaries,
+  getDiaries,
   getLifeCards,
   getProfile,
   getReviewSettings,
@@ -9,6 +10,7 @@ import {
   getTodos,
   resetStorage,
   saveAnniversaries,
+  saveDiaries,
   saveLifeCards,
   saveProfile,
   saveReviewSettings,
@@ -19,6 +21,7 @@ import type {
   Anniversary,
   CheckInInput,
   DiaryEntry,
+  DiaryNote,
   LifeCard,
   LifeTask,
   ReviewSettings,
@@ -33,6 +36,7 @@ type AppDataContextValue = {
   todos: TodoItem[];
   lifeCards: LifeCard[];
   anniversaries: Anniversary[];
+  diaries: DiaryNote[];
   reviewSettings: ReviewSettings;
   updateProfile: (profile: UserProfile) => void;
   updateReviewSettings: (settings: ReviewSettings) => void;
@@ -46,6 +50,9 @@ type AppDataContextValue = {
   createLifeCard: (input: CheckInInput) => Promise<LifeCard>;
   updateLifeCard: (cardId: string, patch: Partial<LifeCard>) => void;
   updateDiary: (cardId: string, diary: DiaryEntry) => void;
+  createDiary: (input: Pick<DiaryNote, "date" | "title" | "content">) => DiaryNote;
+  updateDiaryNote: (note: DiaryNote) => void;
+  removeDiaryNote: (id: string) => void;
   addAnniversary: (anniversary: Omit<Anniversary, "id" | "createdAt">) => void;
   resetAllData: () => void;
 };
@@ -58,6 +65,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
   const [todos, setTodos] = useState(getTodos);
   const [lifeCards, setLifeCards] = useState(getLifeCards);
   const [anniversaries, setAnniversaries] = useState(getAnniversaries);
+  const [diaries, setDiaries] = useState(getDiaries);
   const [reviewSettings, setReviewSettings] = useState(getReviewSettings);
 
   const value = useMemo<AppDataContextValue>(
@@ -67,6 +75,7 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
       todos,
       lifeCards,
       anniversaries,
+      diaries,
       reviewSettings,
       updateProfile(nextProfile) {
         setProfile(nextProfile);
@@ -264,6 +273,33 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         setLifeCards(nextCards);
         saveLifeCards(nextCards);
       },
+      createDiary(input) {
+        const now = new Date().toISOString();
+        const note: DiaryNote = {
+          id: createId("diaryNote"),
+          date: input.date,
+          title: input.title,
+          content: input.content,
+          createdAt: now,
+          updatedAt: now,
+        };
+        const nextDiaries = [note, ...diaries];
+        setDiaries(nextDiaries);
+        saveDiaries(nextDiaries);
+        return note;
+      },
+      updateDiaryNote(note) {
+        const nextDiaries = diaries.map((item) =>
+          item.id === note.id ? { ...note, updatedAt: new Date().toISOString() } : item,
+        );
+        setDiaries(nextDiaries);
+        saveDiaries(nextDiaries);
+      },
+      removeDiaryNote(id) {
+        const nextDiaries = diaries.filter((item) => item.id !== id);
+        setDiaries(nextDiaries);
+        saveDiaries(nextDiaries);
+      },
       addAnniversary(input) {
         const anniversary: Anniversary = {
           ...input,
@@ -281,10 +317,11 @@ export function AppDataProvider({ children }: { children: React.ReactNode }) {
         setTodos(getTodos());
         setLifeCards(getLifeCards());
         setAnniversaries(getAnniversaries());
+        setDiaries(getDiaries());
         setReviewSettings(getReviewSettings());
       },
     }),
-    [anniversaries, lifeCards, profile, reviewSettings, tasks, todos],
+    [anniversaries, diaries, lifeCards, profile, reviewSettings, tasks, todos],
   );
 
   return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>;

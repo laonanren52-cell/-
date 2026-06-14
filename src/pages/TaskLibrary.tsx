@@ -36,8 +36,8 @@ export function TaskLibrary() {
   );
 
   useEffect(() => {
-    setRecommendedTasks(getTodayRecommendedTasks(tasks));
-  }, [tasks]);
+    setRecommendedTasks(getTodayRecommendedTasks(tasks, { category }));
+  }, [category, tasks]);
 
   function submitCustomTask(event: FormEvent) {
     event.preventDefault();
@@ -49,15 +49,15 @@ export function TaskLibrary() {
   }
 
   function refreshRecommendations() {
-    setRecommendedTasks(refreshRecommendedTasks(tasks));
+    setRecommendedTasks(refreshRecommendedTasks(tasks, { category }));
   }
 
   function replaceRecommendation(task: LifeTask) {
-    setRecommendedTasks((current) => replaceRecommendedTask(tasks, task, current));
+    setRecommendedTasks((current) => replaceRecommendedTask(tasks, task, current, { category }));
   }
 
   function dismissRecommendation(task: LifeTask) {
-    setRecommendedTasks((current) => dismissTaskForToday(tasks, task, current));
+    setRecommendedTasks((current) => dismissTaskForToday(tasks, task, current, { category }));
   }
 
   return (

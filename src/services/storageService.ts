@@ -1,5 +1,5 @@
 import { defaultAIApiConfig, defaultAIPreferences, defaultProfile, mockAnniversaries, mockLifeCards, mockTodos, seededTasks } from "../data/mockData";
-import type { Anniversary, LifeCard, LifeTask, ReviewSettings, TodoItem, UserProfile } from "../types";
+import type { Anniversary, DiaryNote, LifeCard, LifeTask, ReviewSettings, TodoItem, UserProfile } from "../types";
 
 const keys = {
   tasks: "lifequest.tasks",
@@ -9,6 +9,7 @@ const keys = {
   anniversaries: "lifequest.anniversaries",
   reviewSettings: "lifequest.reviewSettings",
   profile: "lifequest.profile",
+  diaries: "lifequest.diaries",
 };
 
 const defaultReviewSettings: ReviewSettings = {
@@ -26,6 +27,7 @@ export function initializeStorage() {
   ensure(keys.anniversaries, mockAnniversaries);
   ensure(keys.reviewSettings, defaultReviewSettings);
   ensure(keys.profile, defaultProfile);
+  ensure(keys.diaries, []);
 }
 
 export function getTasks() {
@@ -64,6 +66,15 @@ export function saveAnniversaries(value: Anniversary[]) {
   write(keys.anniversaries, value);
 }
 
+export function getDiaries() {
+  initializeStorage();
+  return read<DiaryNote[]>(keys.diaries, []).map(normalizeDiaryNote);
+}
+
+export function saveDiaries(value: DiaryNote[]) {
+  write(keys.diaries, value.map(normalizeDiaryNote));
+}
+
 export function getReviewSettings() {
   initializeStorage();
   return read<ReviewSettings>(keys.reviewSettings, defaultReviewSettings);
@@ -100,6 +111,7 @@ export function exportAllData() {
     todos: getTodos(),
     lifeCards: getLifeCards(),
     anniversaries: getAnniversaries(),
+    diaries: getDiaries(),
     reviewSettings: getReviewSettings(),
   };
 }
@@ -143,6 +155,8 @@ function mergeSeededTasks(storedTasks: LifeTask[]) {
           icon: task.icon ?? seeded.icon,
           achievementName: task.achievementName ?? seeded.achievementName,
           unlockText: task.unlockText ?? seeded.unlockText,
+          tags: task.tags ?? seeded.tags,
+          isPreset: task.isPreset ?? seeded.isPreset,
         }
       : task;
   });
@@ -162,7 +176,9 @@ function normalizeTodo(item: any): TodoItem {
     status: item.status === "已完成" || item.status === "completed" ? "completed" : "todo",
     sourceTaskId: item.sourceTaskId ?? item.taskId,
     category: item.category,
-    isPinned: Boolean(item.isPinned),
+    priority: item.priority ?? "normal",
+    pinned: Boolean(item.pinned ?? item.isPinned),
+    isPinned: Boolean(item.isPinned ?? item.pinned),
     createdAt: item.createdAt ?? new Date().toISOString(),
     updatedAt: item.updatedAt ?? item.createdAt ?? new Date().toISOString(),
   };
@@ -180,6 +196,18 @@ function normalizeCard(card: any): LifeCard {
           moodText: card.diary.moodText ?? (Array.isArray(card.diary.moodTags) ? card.diary.moodTags.join("、") : moodText),
         }
       : undefined,
+  };
+}
+
+function normalizeDiaryNote(item: any): DiaryNote {
+  const now = new Date().toISOString();
+  return {
+    id: item.id ?? `diary_${Date.now()}`,
+    date: item.date ?? item.createdAt?.slice(0, 10) ?? now.slice(0, 10),
+    title: item.title ?? "未命名日记",
+    content: item.content ?? "",
+    createdAt: item.createdAt ?? now,
+    updatedAt: item.updatedAt ?? item.createdAt ?? now,
   };
 }
 

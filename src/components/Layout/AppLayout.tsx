@@ -1,11 +1,12 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { BookOpen, CalendarHeart, CheckCircle2, Compass, Home, ListChecks, Settings, Sparkles, TimerReset } from "lucide-react";
+import { BookOpen, CalendarHeart, CheckCircle2, Compass, Home, ListChecks, PenLine, Settings, Sparkles, TimerReset } from "lucide-react";
 import { useAppData } from "../../services/AppDataContext";
 
 const navItems = [
   { to: "/", label: "进度盘", icon: Home },
   { to: "/tasks", label: "任务库", icon: Compass },
   { to: "/todos", label: "待办", icon: ListChecks },
+  { to: "/diary", label: "日记", icon: PenLine },
   { to: "/timeline", label: "轨迹", icon: TimerReset },
   { to: "/reviews", label: "复盘", icon: BookOpen },
   { to: "/anniversaries", label: "纪念日", icon: CalendarHeart },

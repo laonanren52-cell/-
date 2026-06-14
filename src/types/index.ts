@@ -55,6 +55,8 @@ export type TodoItem = {
   status: TodoStatus;
   sourceTaskId?: string;
   category?: string;
+  priority?: "low" | "normal" | "high";
+  pinned?: boolean;
   isPinned?: boolean;
   createdAt: string;
   updatedAt?: string;
@@ -90,6 +92,15 @@ export type DiaryEntry = {
   moodText: string;
   imageUrl?: string;
   updatedAt: string;
+};
+
+export type DiaryNote = {
+  id: string;
+  date: string;
+  title: string;
+  content: string;
+  createdAt: string;
+  updatedAt?: string;
 };
 
 export type Anniversary = {
