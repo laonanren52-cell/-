@@ -8,7 +8,7 @@ const navItems = [
   { to: "/tasks", label: "任务库", icon: Compass },
   { to: "/todos", label: "待办", icon: ListChecks },
   { to: "/anniversaries", label: "纪念日", icon: CalendarHeart },
-  { to: "/reviews", label: "时光映照", icon: BookOpen },
+  { to: "/reviews", label: "回溯", icon: BookOpen },
   { to: "/settings", label: "设置", icon: Settings },
 ];
 
@@ -72,7 +72,7 @@ export function AppLayout() {
             }
           >
             <item.icon size={18} />
-            <span>{item.to === "/reviews" ? "映照" : item.label}</span>
+            <span>{item.label}</span>
           </NavLink>
         ))}
       </nav>

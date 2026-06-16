@@ -100,22 +100,22 @@ export function TaskLibrary() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden rounded-[36px] bg-[#25324A] p-5 text-white shadow-[0_16px_48px_rgba(37,50,74,0.16)] md:p-6 animate-fade-up">
-        <DotPattern opacity={0.1} />
+      <section className="relative overflow-hidden rounded-[36px] border border-white/80 bg-[#FBFAF7] p-5 text-[#1f1f1f] shadow-[0_12px_40px_rgba(30,30,30,0.06)] md:p-6 animate-fade-up">
+        <DotPattern opacity={0.2} />
         <div className="relative z-10 mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-sm font-bold text-white/55">今日随机小支线</p>
+            <p className="text-sm font-black text-[#9AA6B8]">今日随机小支线</p>
             <h2 className="mt-1 text-2xl font-black">地球 Online 今日刷新</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-7 text-white/68">每天保留 4 条任务，混合轻松、中等和挑战。不感兴趣的任务今天不再出现。</p>
+            <p className="mt-2 max-w-2xl text-sm font-medium leading-7 text-[#626262]">每天保留 4 条任务，混合轻松、中等和挑战。不感兴趣的任务今天不再出现。</p>
           </div>
-          <button type="button" className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-black text-[#1f1f1f]" onClick={refreshRecommendations}>
+          <button type="button" className="primary-button" onClick={refreshRecommendations}>
             <Shuffle size={18} />
             换一批
           </button>
         </div>
         <div className="relative z-10 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
           {recommendedTasks.map((task) => (
-            <article key={task.id} className="rounded-[28px] bg-white/94 p-4 text-[#1f1f1f] animate-fade-up">
+            <article key={task.id} className="rounded-[28px] border border-white/90 bg-white p-4 text-[#1f1f1f] shadow-[0_10px_30px_rgba(30,30,30,0.05)] animate-fade-up">
               <div className="flex items-start gap-3">
                 <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#F8F6F2] text-2xl">{task.icon || "·"}</span>
                 <div className="min-w-0">

@@ -24,16 +24,16 @@ export function ReviewPanel({ report }: { report: ReviewReport }) {
           <p className="text-sm font-bold text-gray-500">AI 阶段总结</p>
           <p className="mt-3 whitespace-pre-line break-words text-base leading-8 text-gray-700">{report.aiSummary}</p>
         </div>
-        <div className="mt-5 rounded-2xl bg-ink p-5 text-white">
-          <p className="text-sm font-bold text-white/70">下一步建议</p>
+        <div className="mt-5 rounded-2xl border border-white/90 bg-[#FBFAF7] p-5 text-[#1f1f1f] shadow-[inset_0_1px_8px_rgba(31,31,31,0.03)]">
+          <p className="text-sm font-bold text-[#626262]">下一步建议</p>
           <div className="mt-3 grid gap-2">
             {report.nextSuggestions.length ? report.nextSuggestions.map((suggestion) => (
               <p key={suggestion.title} className="flex items-start gap-2 text-sm leading-6">
-                <ArrowRight className="mt-1 shrink-0" size={16} />
+                <ArrowRight className="mt-1 shrink-0 text-[#25324A]" size={16} />
                 <span className="break-words">{suggestion.title}：{suggestion.action}</span>
               </p>
             )) : (
-              <p className="text-sm text-white/70">正在生成更贴近你记录的建议...</p>
+              <p className="text-sm text-[#626262]">正在生成更贴近你记录的建议...</p>
             )}
           </div>
         </div>

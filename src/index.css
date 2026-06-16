@@ -79,7 +79,7 @@ select {
 
 @keyframes dot-breath {
   0%, 100% {
-    opacity: 0.48;
+    opacity: 0.36;
   }
   50% {
     opacity: 1;
@@ -115,16 +115,16 @@ select {
 
   .recall-logo-animated .recall-logo-ring {
     transform-origin: 32px 32px;
-    animation: ring-rotate 10s linear infinite;
+    animation: ring-rotate 8s linear infinite;
   }
 
   .recall-logo-animated .recall-logo-core {
     transform-origin: 28.5px 32px;
-    animation: pulse-soft 4.8s ease-in-out infinite;
+    animation: pulse-soft 3.8s ease-in-out infinite;
   }
 
   .recall-logo-animated .recall-logo-dots circle {
-    animation: dot-breath 3.6s ease-in-out infinite;
+    animation: dot-breath 2.8s ease-in-out infinite;
   }
 }
 

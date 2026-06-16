@@ -120,13 +120,13 @@ export function Reviews() {
         <DotPattern opacity={0.22} />
         <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-sm font-black text-[#A8B8AE]">时光映照</p>
-            <h1 className="mt-3 text-4xl font-black leading-tight text-[#1f1f1f] md:text-5xl">回看那些被你认真保存下来的生活片段</h1>
+            <p className="text-sm font-black text-[#A8B8AE]">回溯</p>
+            <h1 className="mt-3 text-4xl font-black leading-tight text-[#1f1f1f] md:text-5xl">人生记录模拟器</h1>
             <p className="mt-4 max-w-3xl text-sm font-medium leading-7 text-[#626262]">
-              读取当前周期内的 LifeCard，整理分类、情绪、趋势、代表卡和下一步建议。
+              读取当前周期内的 LifeCard，整理分类、情绪、趋势、代表卡和下一步建议，让时光映照变成可回看的生活线索。
             </p>
           </div>
-          <Link to="/settings" className="secondary-button self-start lg:self-auto">映照设置</Link>
+          <Link to="/settings" className="secondary-button self-start lg:self-auto">回溯设置</Link>
         </div>
 
         <div className="relative z-10 mt-7 flex flex-wrap gap-2">

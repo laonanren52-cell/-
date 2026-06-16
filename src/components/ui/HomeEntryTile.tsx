@@ -15,7 +15,7 @@ export function HomeEntryTile({ title, subtitle, icon: Icon, to, className = "" 
   return (
     <Link
       to={to}
-      className={`group relative min-h-[156px] overflow-hidden rounded-[32px] border border-white/80 bg-[#FBFAF7] p-5 shadow-[0_12px_40px_rgba(30,30,30,0.06)] transition duration-500 hover:-translate-y-1 hover:bg-white ${className}`}
+      className={`group relative min-h-[156px] overflow-hidden rounded-[32px] border border-white/80 bg-[#FBFAF7] p-5 shadow-[0_12px_40px_rgba(30,30,30,0.06)] transition duration-300 hover:-translate-y-1 hover:bg-white active:scale-[0.99] ${className}`}
     >
       <DotPattern opacity={0.28} />
       <div className="relative z-10 flex h-full flex-col justify-between">
@@ -25,7 +25,7 @@ export function HomeEntryTile({ title, subtitle, icon: Icon, to, className = "" 
               <Icon size={20} />
             </span>
           ) : <span />}
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1f1f1f] text-white transition duration-500 group-hover:rotate-45">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#25324A] text-white transition duration-300 group-hover:rotate-45">
             <ArrowUpRight size={17} />
           </span>
         </div>

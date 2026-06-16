@@ -59,19 +59,22 @@ export function Dashboard() {
         ) : null}
       </section>
 
-      <section className="relative overflow-hidden rounded-[40px] bg-[#FBFAF7] px-6 py-12 text-center shadow-[0_16px_48px_rgba(30,30,30,0.06)] md:px-12 md:py-16 animate-soft-scale">
-        <DotPattern opacity={0.3} className="animate-float-slow" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(154,166,184,0.18),transparent_34%),radial-gradient(circle_at_20%_82%,rgba(232,182,139,0.12),transparent_32%)]" />
+      <section className="relative overflow-hidden rounded-[40px] bg-[#FBFAF7] px-6 py-12 text-center shadow-[0_16px_48px_rgba(30,30,30,0.06)] md:px-12 md:py-16 animate-fade-up">
+        <DotPattern opacity={0.24} className="animate-float-slow" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(168,184,174,0.18),transparent_34%),radial-gradient(circle_at_20%_82%,rgba(232,182,139,0.10),transparent_32%)]" />
         <div className="relative z-10 mx-auto max-w-5xl">
-          <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-[0_18px_52px_rgba(37,50,74,0.14)] animate-float-slow">
-            <RecallLogo size={74} animated variant="dark" />
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-[0_14px_36px_rgba(37,50,74,0.10)] animate-float-slow">
+            <RecallLogo size={48} animated variant="soft" />
           </div>
           <p className="mt-6 text-sm font-black text-[#9AA6B8]">{formatDate(new Date())}</p>
-          <h1 className="mt-4 text-5xl font-black leading-none tracking-normal text-[#25324A] md:text-7xl">回溯</h1>
-          <p className="mt-4 text-xl font-black text-[#1F2937]">人生记录模拟器</p>
+          <h1 className="mt-4 text-5xl font-black leading-none tracking-normal text-[#1f1f1f] md:text-7xl">人生打卡</h1>
           <p className="mx-auto mt-5 max-w-2xl text-base font-medium leading-8 text-[#6B7280]">
-            回看过去，理解自己，继续前行。{profile.nickname}，把生活里的每一个瞬间认真存档。
+            {profile.nickname}，把今天值得记住的小事完成、记录、存档；回溯会在之后帮你看见自己走过的路。
           </p>
+          <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+            <Link to="/tasks" className="primary-button">去打卡</Link>
+            <Link to="/tasks" className="secondary-button">查看任务库</Link>
+          </div>
         </div>
       </section>
 
@@ -86,7 +89,7 @@ export function Dashboard() {
           <HomeEntryTile title="小日记" subtitle="给生活片段补一段真实感受" icon={NotebookPen} to="/diary" />
         </div>
         <div className="animate-fade-up" style={{ animationDelay: "220ms" }}>
-          <HomeEntryTile title="时光映照" subtitle={`本周保存 ${weekStats.totalCards} 张人生卡`} icon={BookOpen} to="/reviews?period=weekly" />
+          <HomeEntryTile title="回溯" subtitle={`本周保存 ${weekStats.totalCards} 张人生卡`} icon={BookOpen} to="/reviews?period=weekly" />
         </div>
       </section>
 
@@ -122,16 +125,16 @@ export function Dashboard() {
       </section>
 
       <section className="grid grid-cols-1 gap-4 lg:grid-cols-[0.95fr_1.05fr]">
-        <div className="relative overflow-hidden rounded-[32px] bg-[#25324A] p-6 text-white shadow-[0_16px_48px_rgba(37,50,74,0.16)] animate-soft-scale">
-          <DotPattern opacity={0.12} />
+        <div className="relative overflow-hidden rounded-[32px] border border-white/80 bg-[#FBFAF7] p-6 text-[#1f1f1f] shadow-[0_12px_40px_rgba(30,30,30,0.06)] animate-soft-scale">
+          <DotPattern opacity={0.2} />
           <div className="relative z-10">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#25324A] shadow-[inset_0_1px_8px_rgba(31,31,31,0.05)]">
               <Sparkles size={20} />
             </div>
-            <p className="mt-8 text-sm font-bold text-white/60">本周映照</p>
+            <p className="mt-8 text-sm font-black text-[#9AA6B8]">回溯摘要</p>
             <p className="mt-2 text-4xl font-black">{weekStats.totalCards} 张</p>
-            <p className="mt-3 text-sm leading-7 text-white/72">高频分类：{weekStats.topCategory}。常见情绪：{weekStats.topMood}。</p>
-            <Link to="/reviews?period=weekly" className="mt-6 inline-flex rounded-full bg-white px-5 py-3 text-sm font-black text-[#25324A]">查看时光映照</Link>
+            <p className="mt-3 text-sm font-medium leading-7 text-[#626262]">高频分类：{weekStats.topCategory}。常见情绪：{weekStats.topMood}。</p>
+            <Link to="/reviews?period=weekly" className="primary-button mt-6">进入回溯</Link>
           </div>
         </div>
 
