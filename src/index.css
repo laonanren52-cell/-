@@ -34,11 +34,23 @@ select {
 @keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-soft-scale,
+  .animate-float-slow,
+  .animate-shimmer-soft,
+  .recall-logo-animated .recall-logo-ring,
+  .recall-logo-animated .recall-logo-core,
+  .recall-logo-animated .recall-logo-dots circle {
+    animation: none;
   }
 }
 

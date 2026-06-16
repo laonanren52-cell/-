@@ -42,7 +42,7 @@ export function Dashboard() {
   }, [anniversaries, lifeCards, query, tasks]);
 
   return (
-    <div className="page-shell space-y-10 pb-8 md:space-y-14">
+    <div className="page-shell pb-8">
       <section className="relative mx-auto max-w-5xl pt-2 animate-fade-up">
         <SoftSearchBar value={query} onChange={setQuery} />
         {query.trim() ? (
@@ -59,7 +59,7 @@ export function Dashboard() {
         ) : null}
       </section>
 
-      <section className="relative overflow-hidden rounded-[40px] bg-[#FBFAF7] px-6 py-12 text-center shadow-[0_16px_48px_rgba(30,30,30,0.06)] md:px-12 md:py-16 animate-fade-up">
+      <section className="relative mt-10 overflow-hidden rounded-[40px] bg-[#FBFAF7] px-6 py-12 text-center shadow-[0_16px_48px_rgba(30,30,30,0.06)] md:px-12 md:py-16 animate-fade-up">
         <DotPattern opacity={0.24} className="animate-float-slow" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(168,184,174,0.18),transparent_34%),radial-gradient(circle_at_20%_82%,rgba(232,182,139,0.10),transparent_32%)]" />
         <div className="relative z-10 mx-auto max-w-5xl">
@@ -78,25 +78,27 @@ export function Dashboard() {
         </div>
       </section>
 
-      <section className="grid grid-flow-dense grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="animate-fade-up" style={{ animationDelay: "40ms" }}>
-          <HomeEntryTile title="纪念日" subtitle={recentAnniversary ? `最近节点：${Math.abs(daysBetween(recentAnniversary.date))} 天` : "保存值得记住的日子"} icon={CalendarHeart} to="/anniversaries" />
-        </div>
-        <div className="animate-fade-up" style={{ animationDelay: "100ms" }}>
-          <HomeEntryTile title="待办事项" subtitle={`${todayTodos.length} 件今天想完成的小支线`} icon={ListChecks} to="/todos" />
-        </div>
-        <div className="animate-fade-up" style={{ animationDelay: "160ms" }}>
-          <HomeEntryTile title="小日记" subtitle="给生活片段补一段真实感受" icon={NotebookPen} to="/diary" />
-        </div>
-        <div className="animate-fade-up" style={{ animationDelay: "220ms" }}>
-          <HomeEntryTile title="回溯" subtitle={`本周保存 ${weekStats.totalCards} 张人生卡`} icon={BookOpen} to="/reviews?period=weekly" />
+      <section className="mx-auto mt-12 max-w-6xl animate-fade-up">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="animate-fade-up" style={{ animationDelay: "0ms" }}>
+            <HomeEntryTile title="纪念日" subtitle={recentAnniversary ? `最近节点：${Math.abs(daysBetween(recentAnniversary.date))} 天` : "保存值得记住的日子"} icon={CalendarHeart} to="/anniversaries" />
+          </div>
+          <div className="animate-fade-up" style={{ animationDelay: "100ms" }}>
+            <HomeEntryTile title="待办事项" subtitle={`${todayTodos.length} 件今天想完成的小支线`} icon={ListChecks} to="/todos" />
+          </div>
+          <div className="animate-fade-up" style={{ animationDelay: "200ms" }}>
+            <HomeEntryTile title="小日记" subtitle="给生活片段补一段真实感受" icon={NotebookPen} to="/diary" />
+          </div>
+          <div className="animate-fade-up" style={{ animationDelay: "300ms" }}>
+            <HomeEntryTile title="回溯" subtitle={`本周保存 ${weekStats.totalCards} 张人生卡`} icon={BookOpen} to="/reviews?period=weekly" />
+          </div>
         </div>
       </section>
 
-      <section className="space-y-4 animate-fade-up">
+      <section className="mt-16 space-y-5 animate-fade-up md:mt-20">
         <div className="flex items-center gap-4">
-          <h2 className="shrink-0 text-2xl font-black text-[#1f1f1f]">我的待办</h2>
-          <span className="h-px flex-1 bg-[#D8DEE5]" />
+          <h2 className="shrink-0 text-3xl font-bold text-[#1F1F1F]">我的待办</h2>
+          <div className="h-px flex-1 bg-[#D8DEE5]" />
           <Link to="/todos" className="text-sm font-black text-[#626262]">管理</Link>
         </div>
         <div className="grid gap-3">
@@ -124,7 +126,7 @@ export function Dashboard() {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-4 lg:grid-cols-[0.95fr_1.05fr]">
+      <section className="mt-14 grid grid-cols-1 gap-4 lg:grid-cols-[0.95fr_1.05fr]">
         <div className="relative overflow-hidden rounded-[32px] border border-white/80 bg-[#FBFAF7] p-6 text-[#1f1f1f] shadow-[0_12px_40px_rgba(30,30,30,0.06)] animate-soft-scale">
           <DotPattern opacity={0.2} />
           <div className="relative z-10">
