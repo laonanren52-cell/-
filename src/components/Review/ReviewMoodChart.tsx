@@ -36,7 +36,7 @@ export function ReviewMoodChart({ data }: { data: Array<{ mood: string; count: n
           })}
         </div>
       ) : (
-        <p className="rounded-2xl bg-orange-50 p-4 text-sm leading-7 text-orange-900">还没有情绪记录。下一张人生卡里写一句真实心情，这里就会开始长出轨迹。</p>
+        <p className="rounded-2xl bg-orange-50 p-4 text-sm leading-7 text-orange-900">还没有情绪记录。下一张人生卡里写一句真实心情，这里就会开始长出脉络。</p>
       )}
     </section>
   );

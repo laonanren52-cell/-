@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  color: #2f3137;
-  background: #fff8ed;
+  color: #1f1f1f;
+  background: #f8f6f2;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -30,26 +30,30 @@ select {
   }
 
   .glass-card {
-    @apply rounded-2xl border border-white/70 bg-white/75 shadow-sm backdrop-blur;
+    @apply rounded-[28px] border border-white/80 bg-[#FBFAF7]/90 shadow-[0_12px_40px_rgba(30,30,30,0.06)] backdrop-blur;
+  }
+
+  .paper-card {
+    @apply rounded-[32px] border border-white/80 bg-[#FBFAF7] shadow-[0_12px_40px_rgba(30,30,30,0.06)];
   }
 
   .section-title {
-    @apply text-xl font-bold text-ink sm:text-2xl;
+    @apply text-2xl font-black tracking-normal text-[#1f1f1f] sm:text-3xl;
   }
 
   .soft-input {
-    @apply w-full rounded-2xl border border-orange-100 bg-white/80 px-4 py-3 text-sm text-ink outline-none transition focus:border-coral focus:ring-4 focus:ring-orange-100;
+    @apply w-full rounded-[24px] border border-white/90 bg-[#FBFAF7] px-4 py-3 text-sm font-medium text-[#1f1f1f] shadow-[inset_0_1px_6px_rgba(31,31,31,0.04)] outline-none transition placeholder:text-[#8b8b86] focus:border-[#A8B8AE] focus:bg-white;
   }
 
   .primary-button {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-ink px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-black focus:outline-none focus:ring-4 focus:ring-orange-100;
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-[#1f1f1f] px-5 py-3 text-sm font-bold text-white shadow-[0_10px_28px_rgba(31,31,31,0.14)] transition hover:-translate-y-0.5 hover:bg-black focus:outline-none focus:ring-4 focus:ring-[#D8DEE5];
   }
 
   .secondary-button {
-    @apply inline-flex items-center justify-center gap-2 rounded-2xl border border-orange-100 bg-white/80 px-4 py-3 text-sm font-semibold text-ink shadow-sm transition hover:-translate-y-0.5 hover:border-coral hover:bg-white focus:outline-none focus:ring-4 focus:ring-orange-100;
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-white/90 bg-[#FBFAF7] px-5 py-3 text-sm font-bold text-[#1f1f1f] shadow-[0_8px_24px_rgba(30,30,30,0.05)] transition hover:-translate-y-0.5 hover:bg-white focus:outline-none focus:ring-4 focus:ring-[#D8DEE5];
   }
 
   .icon-button {
-    @apply inline-flex h-10 w-10 items-center justify-center rounded-full border border-orange-100 bg-white/80 text-ink shadow-sm transition hover:-translate-y-0.5 hover:border-coral hover:bg-white;
+    @apply inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/90 bg-[#FBFAF7] text-[#1f1f1f] shadow-sm transition hover:-translate-y-0.5 hover:bg-white;
   }
 }

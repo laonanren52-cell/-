@@ -7,11 +7,11 @@ type PeriodRange = {
 };
 
 const periodTitle: Record<ReviewPeriod, string> = {
-  daily: "日复盘",
-  weekly: "周复盘",
-  monthly: "月复盘",
-  quarterly: "季复盘",
-  yearly: "年复盘",
+  daily: "日映照",
+  weekly: "周映照",
+  monthly: "月映照",
+  quarterly: "季映照",
+  yearly: "年映照",
 };
 
 const moodRules: Array<{ mood: string; words: string[] }> = [

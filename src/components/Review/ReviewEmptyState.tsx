@@ -11,7 +11,7 @@ export function ReviewEmptyState({ periodLabel }: { periodLabel: string }) {
         <div className="min-w-0 flex-1">
           <h2 className="text-lg font-black text-ink">{periodLabel}还在等第一张人生卡</h2>
           <p className="mt-2 text-sm leading-7 text-zinc-600">
-            这一个周期还没有人生卡，完成一次打卡后，这里会生成你的生活复盘、趋势图和代表卡。
+            这一个周期还没有人生卡，完成一次打卡后，这里会生成你的时光映照、趋势图和代表卡。
           </p>
         </div>
         <Link to="/tasks" className="secondary-button shrink-0">去任务库看看</Link>

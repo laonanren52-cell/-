@@ -56,7 +56,7 @@ export async function generateReviewSummary(input: {
   const preferences = input.preferences || input.aiPreferences || defaultPreferences;
   const periodLabel = input.periodLabel || getReadablePeriod(input.periodType);
   if (!input.cards.length) {
-    return "这个周期还没有足够内容生成复盘。完成一次打卡后，我会帮你把这些生活片段整理成阶段总结。";
+    return "这个周期还没有足够内容生成映照。完成一次打卡后，我会帮你把这些生活片段整理成阶段总结。";
   }
 
   const prompt = buildReviewPrompt(input.cards, periodLabel, input.periodType, preferences, input.stats);
@@ -208,7 +208,7 @@ function buildSuggestionPrompt(
     "已完成事件：",
     events,
     `可参考任务池：${taskTitles || "暂无"}`,
-    "规则：建议必须具体可执行；如果独处多，可以推荐轻社交或继续温和独处；如果成长多，推荐恢复或复盘；如果负面情绪多，推荐低强度治愈任务；不要每次都推荐读书或运动。",
+    "规则：建议必须具体可执行；如果独处多，可以推荐轻社交或继续温和独处；如果成长多，推荐恢复或阶段整理；如果负面情绪多，推荐低强度治愈任务；不要每次都推荐读书或运动。",
     "输出格式必须每行一条：建议标题｜为什么推荐｜可执行步骤。",
   ].join("\n");
 }
@@ -399,7 +399,7 @@ function mockNextTaskSuggestions(cards: LifeCard[], stats?: ReviewStats): Review
   if (/天空|照片|观察|日落|风景|城市|生活观察/.test(text)) {
     suggestions.push({
       title: "连续记录一个生活角落",
-      reason: "你对生活细节的观察已经出现了，连续记录会让轨迹更清楚。",
+      reason: "你对生活细节的观察已经出现了，连续记录会让脉络更清楚。",
       action: "选同一个窗边、路口或天空，连续两天各拍一张并写一句变化。",
     });
   }
@@ -415,12 +415,12 @@ function mockNextTaskSuggestions(cards: LifeCard[], stats?: ReviewStats): Review
   suggestions.push(
     {
       title: "补一张今天的生活切片",
-      reason: "复盘会因为具体记录变得更像你，而不是模板总结。",
+      reason: "时光映照会因为具体记录变得更像你，而不是模板总结。",
       action: "在今天结束前拍一张眼前的小物或路上的画面，配一句当下心情。",
     },
     {
       title: "解锁一个很小的新地点",
-      reason: "换一个安全、熟悉附近的小场景，能给生活轨迹增加一点新鲜感。",
+      reason: "换一个安全、熟悉附近的小场景，能给生活切片增加一点新鲜感。",
       action: "白天去附近一家便利店、咖啡店或公园入口停留 10 分钟。",
     },
   );
@@ -468,11 +468,11 @@ function inferImageScene(title: string) {
 
 function getReadablePeriod(period: ReviewPeriod) {
   const labels: Record<ReviewPeriod, string> = {
-    daily: "日复盘",
-    weekly: "周复盘",
-    monthly: "月复盘",
-    quarterly: "季复盘",
-    yearly: "年复盘",
+    daily: "日映照",
+    weekly: "周映照",
+    monthly: "月映照",
+    quarterly: "季映照",
+    yearly: "年映照",
   };
   return labels[period];
 }

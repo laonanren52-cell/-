@@ -6,7 +6,7 @@ export function ReviewTrendChart({ data }: { data: Array<{ date: string; count: 
     <section className="rounded-2xl border border-orange-100/70 bg-white p-5 shadow-sm">
       <div className="mb-5">
         <h2 className="text-lg font-black text-ink">完成趋势</h2>
-        <p className="mt-1 text-sm text-zinc-500">按当前复盘周期自动切换粒度。</p>
+        <p className="mt-1 text-sm text-zinc-500">按当前映照周期自动切换粒度。</p>
       </div>
       <div className="flex h-48 items-end gap-2 overflow-x-auto rounded-2xl bg-orange-50/70 px-3 pb-4 pt-6">
         {data.map((item) => {

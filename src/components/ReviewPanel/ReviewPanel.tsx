@@ -12,7 +12,7 @@ export function ReviewPanel({ report }: { report: ReviewReport }) {
           </span>
           <div>
             <h2 className="section-title">{report.title}</h2>
-            <p className="text-sm text-zinc-500">真实前端统计 + AI 具体复盘</p>
+            <p className="text-sm text-zinc-500">真实前端统计 + AI 阶段映照</p>
           </div>
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">

@@ -15,7 +15,7 @@ export function LifeCardImage({ imageUrl, imageSource, title, className = "", ch
   const shouldShowImage = Boolean(imageUrl && !failed);
 
   return (
-    <div className={`relative overflow-hidden bg-gradient-to-br from-blush via-cream to-skysoft ${className}`}>
+    <div className={`relative overflow-hidden bg-gradient-to-br from-[#F8F6F2] via-[#EEF1EC] to-[#D8DEE5] ${className}`}>
       {shouldShowImage ? (
         <img
           src={imageUrl}
@@ -34,8 +34,8 @@ export function LifeCardImage({ imageUrl, imageSource, title, className = "", ch
 function DefaultTexture({ imageSource: _imageSource }: { imageSource?: ImageSource }) {
   return (
     <>
-      <div className="absolute right-[-20%] top-[-20%] h-64 w-64 rounded-full bg-white/45 blur-2xl" />
-      <div className="absolute bottom-[-18%] left-[-12%] h-72 w-72 rounded-full bg-coral/15 blur-2xl" />
+      <div className="absolute right-[-20%] top-[-20%] h-64 w-64 rounded-full bg-white/55 blur-2xl" />
+      <div className="absolute bottom-[-18%] left-[-12%] h-72 w-72 rounded-full bg-[#A8B8AE]/20 blur-2xl" />
       <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-white/5" />
     </>
   );
