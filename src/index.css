@@ -3,6 +3,13 @@
 @tailwind utilities;
 
 :root {
+  --recall-navy: #25324a;
+  --recall-ink: #1f2937;
+  --recall-muted: #6b7280;
+  --recall-paper: #f8f6f2;
+  --recall-card: #ffffff;
+  --recall-sage: #a8b8ae;
+  --recall-warm: #e8b68b;
   color: #1f1f1f;
   background: #f8f6f2;
   font-synthesis: none;
@@ -22,6 +29,103 @@ input,
 textarea,
 select {
   font: inherit;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes soft-scale {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer-soft {
+  from {
+    background-position: 160% 0;
+  }
+  to {
+    background-position: -160% 0;
+  }
+}
+
+@keyframes float-slow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes ring-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dot-breath {
+  0%, 100% {
+    opacity: 0.48;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-soft {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .animate-fade-up {
+    animation: fade-up 500ms ease-out both;
+  }
+
+  .animate-soft-scale {
+    animation: soft-scale 520ms ease-out both;
+  }
+
+  .animate-float-slow {
+    animation: float-slow 5.5s ease-in-out infinite;
+  }
+
+  .animate-shimmer-soft {
+    background-size: 220% 100%;
+    animation: shimmer-soft 2.8s ease-in-out infinite;
+  }
+
+  .recall-logo-animated .recall-logo-ring {
+    transform-origin: 32px 32px;
+    animation: ring-rotate 10s linear infinite;
+  }
+
+  .recall-logo-animated .recall-logo-core {
+    transform-origin: 28.5px 32px;
+    animation: pulse-soft 4.8s ease-in-out infinite;
+  }
+
+  .recall-logo-animated .recall-logo-dots circle {
+    animation: dot-breath 3.6s ease-in-out infinite;
+  }
 }
 
 @layer components {
@@ -46,7 +150,7 @@ select {
   }
 
   .primary-button {
-    @apply inline-flex items-center justify-center gap-2 rounded-full bg-[#1f1f1f] px-5 py-3 text-sm font-bold text-white shadow-[0_10px_28px_rgba(31,31,31,0.14)] transition hover:-translate-y-0.5 hover:bg-black focus:outline-none focus:ring-4 focus:ring-[#D8DEE5];
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-[#25324A] px-5 py-3 text-sm font-bold text-white shadow-[0_10px_28px_rgba(37,50,74,0.16)] transition hover:-translate-y-0.5 hover:bg-[#1F2937] focus:outline-none focus:ring-4 focus:ring-[#D8DEE5];
   }
 
   .secondary-button {

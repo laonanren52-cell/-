@@ -46,7 +46,7 @@ export function Todos() {
 
   return (
     <div className="page-shell space-y-7">
-      <section className="relative overflow-hidden rounded-[40px] bg-[#FBFAF7] p-6 shadow-[0_16px_48px_rgba(30,30,30,0.06)] md:p-8">
+      <section className="relative overflow-hidden rounded-[40px] bg-[#FBFAF7] p-6 shadow-[0_16px_48px_rgba(30,30,30,0.06)] md:p-8 animate-fade-up">
         <DotPattern opacity={0.2} />
         <div className="relative z-10">
           <p className="text-sm font-black text-[#A8B8AE]">待办事项</p>
@@ -61,7 +61,7 @@ export function Todos() {
         </div>
       </section>
 
-      <form className="paper-card grid grid-cols-1 gap-3 p-5 md:grid-cols-[1fr_1.2fr_auto]" onSubmit={submit}>
+      <form className="paper-card grid grid-cols-1 gap-3 p-5 md:grid-cols-[1fr_1.2fr_auto] animate-fade-up" onSubmit={submit}>
         <input className="soft-input" placeholder="新增待办，例如：拍一张今天的天空" value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} />
         <input className="soft-input" placeholder="补充描述，可选" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} />
         <button className="primary-button" type="submit">
@@ -96,7 +96,7 @@ function TodoSection({ title, items, completed, onDone, onRemove, onPin, onEdit,
       </div>
       <div className="grid gap-3">
         {items.length ? items.map((item) => (
-          <article key={item.id} className="paper-card p-5 transition hover:-translate-y-0.5 hover:bg-white">
+          <article key={item.id} className="paper-card p-5 transition hover:-translate-y-0.5 hover:bg-white animate-fade-up">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0">
                 <div className="mb-2 flex flex-wrap gap-2">

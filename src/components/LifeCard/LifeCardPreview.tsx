@@ -22,7 +22,7 @@ export function LifeCardPreview({ card, compact = false }: { card: LifeCard; com
         <LifeCardImage imageUrl={card.imageUrl} imageSource={card.imageSource} title={card.title} className="h-full w-full transition duration-700 group-hover:scale-105" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/12 via-transparent to-black/10" />
         <span className="absolute left-3 top-3 max-w-[62%] truncate rounded-full bg-white/92 px-3 py-1 text-xs font-black text-[#1f1f1f] shadow-sm">
-          {card.category || "人生支线"}
+          {card.category || "人生卡"}
         </span>
         <span className="absolute right-3 top-3 rounded-full bg-[#1f1f1f]/88 px-3 py-1 text-xs font-black text-white shadow-sm">
           {imageLabel}

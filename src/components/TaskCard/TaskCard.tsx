@@ -7,7 +7,7 @@ export function TaskCard({ task, onAddTodo }: { task: LifeTask; onAddTodo: (task
   const icon = task.icon || "·";
 
   return (
-    <article className="group grid gap-4 overflow-hidden rounded-[32px] border border-white/80 bg-[#FBFAF7] p-4 shadow-[0_12px_40px_rgba(30,30,30,0.06)] transition duration-500 hover:-translate-y-1 hover:bg-white md:grid-cols-[150px_1fr]">
+    <article className="group grid gap-4 overflow-hidden rounded-[32px] border border-white/80 bg-[#FBFAF7] p-4 shadow-[0_12px_40px_rgba(30,30,30,0.06)] transition duration-500 hover:-translate-y-1 hover:bg-white md:grid-cols-[150px_1fr] animate-fade-up">
       <div className="relative min-h-[142px] overflow-hidden rounded-[26px] bg-[#EEF1EC]">
         <DotPattern opacity={0.24} />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.92),transparent_34%),radial-gradient(circle_at_70%_80%,rgba(232,182,139,0.22),transparent_36%)]" />

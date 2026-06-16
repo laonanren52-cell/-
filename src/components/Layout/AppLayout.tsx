@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from "react-router-dom";
-import { BookOpen, CalendarHeart, CheckCircle2, Compass, Home, ListChecks, Settings, Sparkles } from "lucide-react";
+import { BookOpen, CalendarHeart, CheckCircle2, Compass, Home, ListChecks, Settings } from "lucide-react";
+import { RecallLogo } from "../ui/RecallLogo";
 import { useAppData } from "../../services/AppDataContext";
 
 const navItems = [
@@ -12,20 +13,20 @@ const navItems = [
 ];
 
 export function AppLayout() {
-  const { profile, lifeCards } = useAppData();
+  const { lifeCards } = useAppData();
   const mobileItems = navItems.slice(0, 5);
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#F8F6F2] text-[#1f1f1f]">
       <header className="sticky top-0 z-40 border-b border-white/70 bg-[#F8F6F2]/86 backdrop-blur-2xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
-          <NavLink to="/" className="flex min-w-0 items-center gap-3">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#1f1f1f] text-white shadow-[0_12px_32px_rgba(31,31,31,0.16)]">
-              <Sparkles size={21} />
+          <NavLink to="/" className="group flex min-w-0 items-center gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white shadow-[0_12px_32px_rgba(37,50,74,0.12)] transition duration-500 group-hover:scale-105">
+              <RecallLogo size={36} animated variant="dark" />
             </span>
             <div className="min-w-0">
-              <p className="truncate text-base font-black tracking-normal text-[#1f1f1f]">人生支线 LifeQuest</p>
-              <p className="truncate text-xs font-medium text-[#626262]">Hi，{profile.nickname}，已收藏 {lifeCards.length} 个生活片段</p>
+              <p className="truncate text-base font-black tracking-normal text-[#25324A]">回溯</p>
+              <p className="truncate text-xs font-medium text-[#6B7280]">人生记录模拟器 · 已收藏 {lifeCards.length} 个片段</p>
             </div>
           </NavLink>
 

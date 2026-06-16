@@ -73,18 +73,18 @@ export function LifeCardDetail() {
 
   return (
     <div className="page-shell grid grid-cols-1 items-start gap-6 lg:grid-cols-[0.92fr_1.08fr]">
-      <section className="overflow-hidden rounded-[36px] border border-white/80 bg-[#FBFAF7] shadow-[0_16px_48px_rgba(30,30,30,0.07)]">
+      <section className="overflow-hidden rounded-[36px] border border-white/80 bg-[#FBFAF7] shadow-[0_16px_48px_rgba(30,30,30,0.07)] animate-soft-scale">
         <div className="relative h-[330px] overflow-hidden sm:h-[420px]">
           <LifeCardImage imageUrl={card.imageUrl} imageSource={card.imageSource} title={card.title} className="h-full w-full" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/22 via-transparent to-black/12" />
           <div className="absolute left-5 top-5 max-w-[58%] truncate rounded-full bg-white/92 px-4 py-2 text-xs font-black text-[#1f1f1f] shadow-sm">
-            {card.category || "人生支线"}
+            {card.category || "人生卡"}
           </div>
           <div className="absolute right-5 top-5 rounded-full bg-[#1f1f1f]/86 px-4 py-2 text-xs font-black text-white shadow-sm">
             {card.imageSource === "uploaded" ? "用户照片" : card.imageSource === "ai" ? "AI 图" : "默认卡"}
           </div>
         </div>
-        <div className="space-y-4 p-7 sm:p-8">
+        <div className="space-y-4 p-7 sm:p-8 animate-fade-up">
           <p className="flex items-center gap-2 text-sm font-black text-[#A8B8AE]">
             <Sparkles size={16} />
             AI 纪念文案
@@ -97,7 +97,7 @@ export function LifeCardDetail() {
       </section>
 
       <section className="space-y-5">
-        <div className="paper-card p-6">
+        <div className="paper-card p-6 animate-fade-up">
           <p className="mb-4 inline-flex rounded-full bg-[#F2F0EA] px-3 py-1 text-sm font-black text-[#626262]">{card.moodText}</p>
           <div className="grid gap-3 text-sm font-medium leading-7 text-[#626262] sm:grid-cols-2">
             <p><span className="font-black text-[#1f1f1f]">完成时间：</span>{formatDate(card.completedAt, true)}</p>

@@ -116,7 +116,7 @@ export function Reviews() {
 
   return (
     <div className="page-shell space-y-7">
-      <section className="relative overflow-hidden rounded-[40px] bg-[#FBFAF7] p-6 shadow-[0_16px_48px_rgba(30,30,30,0.06)] md:p-8">
+      <section className="relative overflow-hidden rounded-[40px] bg-[#FBFAF7] p-6 shadow-[0_16px_48px_rgba(30,30,30,0.06)] md:p-8 animate-fade-up">
         <DotPattern opacity={0.22} />
         <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -161,9 +161,9 @@ export function Reviews() {
 
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1.35fr_0.9fr]">
         <div className="space-y-6">
-          <ReviewCategoryChart data={stats.categoryDistribution} />
-          <ReviewMoodChart data={stats.moodDistribution} />
-          <ReviewTrendChart data={stats.dailyTrend} />
+          <div className="animate-fade-up"><ReviewCategoryChart data={stats.categoryDistribution} /></div>
+          <div className="animate-fade-up"><ReviewMoodChart data={stats.moodDistribution} /></div>
+          <div className="animate-fade-up"><ReviewTrendChart data={stats.dailyTrend} /></div>
 
           {periodCards.length ? (
             <section className="paper-card p-5">
@@ -190,7 +190,7 @@ export function Reviews() {
             </div>
             <div className="space-y-4">
               {stats.representativeCards.length ? (
-                stats.representativeCards.map((card) => <LifeCardPreview key={card.id} card={card} compact />)
+                stats.representativeCards.map((card) => <div key={card.id} className="animate-soft-scale"><LifeCardPreview card={card} compact /></div>)
               ) : (
                 <p className="rounded-[24px] bg-[#F8F6F2] p-4 text-sm font-medium leading-7 text-[#626262]">
                   这里会展示本周期最有代表性的 1-3 张人生卡。
@@ -199,7 +199,7 @@ export function Reviews() {
             </div>
           </section>
 
-          <section className="paper-card p-5">
+          <section className="paper-card p-5 animate-fade-up">
             <h2 className="text-lg font-black text-[#1f1f1f]">AI 阶段映照</h2>
             <div className="mt-4 rounded-[24px] bg-[#F8F6F2] p-4 text-sm font-medium leading-7 text-[#1f1f1f]">
               {periodCards.length

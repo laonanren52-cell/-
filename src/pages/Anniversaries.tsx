@@ -33,12 +33,12 @@ export function Anniversaries() {
 
   return (
     <div className="page-shell space-y-6">
-      <section className="glass-card p-6">
+      <section className="glass-card p-6 animate-fade-up">
         <p className="text-sm font-bold text-coral">纪念日</p>
         <h1 className="section-title mt-2">把重要时刻变成可回看的节点</h1>
       </section>
 
-      <form className="glass-card grid grid-cols-1 gap-4 p-6 md:grid-cols-2 xl:grid-cols-5" onSubmit={submit}>
+      <form className="glass-card grid grid-cols-1 gap-4 p-6 md:grid-cols-2 xl:grid-cols-5 animate-fade-up" onSubmit={submit}>
         <input className="soft-input" placeholder="纪念日标题" value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} />
         <input className="soft-input" type="date" value={form.date} onChange={(event) => setForm({ ...form, date: event.target.value })} />
         <select className="soft-input" value={form.type} onChange={(event) => setForm({ ...form, type: event.target.value as "countUp" | "countDown" })}>
@@ -69,7 +69,7 @@ function AnniversarySection({ title, items }: { title: string; items: ReturnType
             const diff = daysBetween(item.date);
             const text = item.type === "countDown" ? `还有 ${Math.max(diff, 0)} 天` : `已经过去 ${Math.abs(diff)} 天`;
             return (
-              <article key={item.id} className="glass-card p-5">
+              <article key={item.id} className="glass-card p-5 animate-fade-up">
                 <p className="mb-3 flex items-center gap-2 text-sm font-bold text-coral">
                   <Clock size={16} />
                   {text}

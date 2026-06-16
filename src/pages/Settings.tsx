@@ -79,7 +79,7 @@ export function Settings() {
         <DotPattern opacity={0.18} />
         <div className="relative z-10">
           <p className="text-sm font-black text-[#A8B8AE]">设置</p>
-          <h1 className="mt-3 text-4xl font-black leading-tight text-[#1f1f1f] md:text-5xl">调整 LifeQuest 的陪伴方式</h1>
+          <h1 className="mt-3 text-4xl font-black leading-tight text-[#1f1f1f] md:text-5xl">调整回溯的陪伴方式</h1>
           <p className="mt-4 max-w-2xl text-sm font-medium leading-7 text-[#626262]">AI 偏好会影响人生卡文案、时光映照和下一步建议的语气。</p>
         </div>
       </section>

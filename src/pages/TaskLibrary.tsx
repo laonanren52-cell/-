@@ -66,7 +66,7 @@ export function TaskLibrary() {
 
   return (
     <div className="page-shell space-y-8">
-      <section className="relative overflow-hidden rounded-[40px] bg-[#FBFAF7] p-6 shadow-[0_16px_48px_rgba(30,30,30,0.06)] md:p-8">
+      <section className="relative overflow-hidden rounded-[40px] bg-[#FBFAF7] p-6 shadow-[0_16px_48px_rgba(30,30,30,0.06)] md:p-8 animate-fade-up">
         <DotPattern opacity={0.22} />
         <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
@@ -100,7 +100,7 @@ export function TaskLibrary() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden rounded-[36px] bg-[#1f1f1f] p-5 text-white shadow-[0_16px_48px_rgba(30,30,30,0.12)] md:p-6">
+      <section className="relative overflow-hidden rounded-[36px] bg-[#25324A] p-5 text-white shadow-[0_16px_48px_rgba(37,50,74,0.16)] md:p-6 animate-fade-up">
         <DotPattern opacity={0.1} />
         <div className="relative z-10 mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -115,7 +115,7 @@ export function TaskLibrary() {
         </div>
         <div className="relative z-10 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
           {recommendedTasks.map((task) => (
-            <article key={task.id} className="rounded-[28px] bg-white/94 p-4 text-[#1f1f1f]">
+            <article key={task.id} className="rounded-[28px] bg-white/94 p-4 text-[#1f1f1f] animate-fade-up">
               <div className="flex items-start gap-3">
                 <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#F8F6F2] text-2xl">{task.icon || "·"}</span>
                 <div className="min-w-0">

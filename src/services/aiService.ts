@@ -100,7 +100,7 @@ export async function testTextApiConnection() {
   if (!config.textApiBase || !config.textApiKey || !config.textModel) {
     throw new Error("请先填写文本 API Base、Key 和 Model。");
   }
-  return callTextApi("请只回复：LifeQuest 文本 API 已连接。", defaultPreferences);
+  return callTextApi("请只回复：回溯文本 API 已连接。", defaultPreferences);
 }
 
 export async function testImageApiConnection() {
@@ -113,7 +113,7 @@ export async function testImageApiConnection() {
 
 export function buildLifeCardPrompt(input: LifeCardAiInput) {
   return [
-    "你是 LifeQuest 的人生卡文案助手。请基于用户真实完成的事件写一段自然、具体、不空泛的纪念文案。",
+    "你是「回溯」的人生卡文案助手。请基于用户真实完成的事件写一段自然、具体、不空泛的纪念文案。",
     `任务标题：${input.title}`,
     `任务分类：${input.category || "未分类"}`,
     `用户感受：${input.note || "未填写"}`,
@@ -177,7 +177,7 @@ function buildReviewPrompt(
     .join("\n");
 
   return [
-    `请为 LifeQuest 用户生成${periodLabel}。周期类型：${periodType}。`,
+    `请为「回溯」用户生成${periodLabel}。周期类型：${periodType}。`,
     `统计：本周期 ${stats?.totalCards ?? cards.length} 张卡；较上一周期 ${formatChange(stats?.growthRate ?? 0)}；高频分类 ${stats?.topCategory || "暂无"}；常见情绪 ${stats?.topMood || "暂无"}；活跃时段 ${stats?.mostActiveDay || "暂无"}。`,
     `分类分布：${stats?.categoryDistribution.map((item) => `${item.category}${item.count}`).join("、") || "暂无"}。`,
     `情绪分布：${stats?.moodDistribution.map((item) => `${item.mood}${item.count}`).join("、") || "暂无"}。`,
