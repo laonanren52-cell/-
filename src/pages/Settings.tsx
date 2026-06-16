@@ -1,6 +1,7 @@
 import { Download, PlugZap, RefreshCcw, Save } from "lucide-react";
 import { useState } from "react";
 import { DotPattern } from "../components/ui/DotPattern";
+import { InstallAppButton } from "../components/ui/InstallAppButton";
 import { useAppData } from "../services/AppDataContext";
 import { testImageApiConnection, testTextApiConnection } from "../services/aiService";
 import { exportAllData } from "../services/storageService";
@@ -116,6 +117,23 @@ export function Settings() {
           <PreferenceSlider label="共情能力" hint="越高越温柔，越会回应情绪。" value={aiPreferences.empathy} onChange={(value) => setAiPreferences({ ...aiPreferences, empathy: value })} />
           <PreferenceSlider label="幽默能力" hint="越高越轻松俏皮，但不油腻。" value={aiPreferences.humor} onChange={(value) => setAiPreferences({ ...aiPreferences, humor: value })} />
           <PreferenceSlider label="客观能力" hint="越高越直接、理性、少抒情。" value={aiPreferences.objectivity} onChange={(value) => setAiPreferences({ ...aiPreferences, objectivity: value })} />
+        </div>
+      </section>
+
+      <section className="paper-card relative overflow-hidden p-6">
+        <DotPattern opacity={0.16} />
+        <div className="relative z-10 grid gap-5 lg:grid-cols-[1fr_320px] lg:items-center">
+          <div>
+            <p className="text-sm font-black text-[#A8B8AE]">桌面安装</p>
+            <h2 className="mt-2 text-2xl font-black text-[#1F1F1F]">把回溯安装到桌面</h2>
+            <p className="mt-3 max-w-2xl text-sm font-medium leading-7 text-[#5F6368]">
+              像普通应用一样快速打开，不用每次从浏览器标签页里寻找。安装后，本地记录和 localStorage 数据会继续保留。
+            </p>
+            <p className="mt-4 text-sm font-medium leading-7 text-[#7A7F87]">
+              支持 Chrome、Microsoft Edge 和部分 Android 浏览器。Safari / 微信内置浏览器可能不支持一键安装；如果按钮不可用，可以通过浏览器菜单手动添加到桌面。
+            </p>
+          </div>
+          <InstallAppButton variant="card" />
         </div>
       </section>
 

@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { LifeCardPreview } from "../components/LifeCard/LifeCardPreview";
 import { DotPattern } from "../components/ui/DotPattern";
 import { HomeEntryTile } from "../components/ui/HomeEntryTile";
+import { InstallAppButton } from "../components/ui/InstallAppButton";
 import { RecallLogo } from "../components/ui/RecallLogo";
 import { SoftSearchBar } from "../components/ui/SoftSearchBar";
 import { useAppData } from "../services/AppDataContext";
@@ -74,6 +75,7 @@ export function Dashboard() {
           <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
             <Link to="/tasks" className="primary-button">去打卡</Link>
             <Link to="/tasks" className="secondary-button">查看任务库</Link>
+            <InstallAppButton variant="ghost" />
           </div>
         </div>
       </section>

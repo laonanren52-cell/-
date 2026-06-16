@@ -1,5 +1,7 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { BookOpen, CalendarHeart, CheckCircle2, Compass, Home, ListChecks, Settings } from "lucide-react";
+import { InstallAppButton } from "../ui/InstallAppButton";
+import { PwaUpdatePrompt } from "../ui/PwaUpdatePrompt";
 import { RecallLogo } from "../ui/RecallLogo";
 import { useAppData } from "../../services/AppDataContext";
 
@@ -48,10 +50,13 @@ export function AppLayout() {
             ))}
           </nav>
 
-          <NavLink to="/tasks" className="primary-button hidden sm:inline-flex">
-            <CheckCircle2 size={18} />
-            去打卡
-          </NavLink>
+          <div className="hidden items-center gap-2 sm:flex">
+            <InstallAppButton variant="ghost" className="hidden xl:inline-flex" />
+            <NavLink to="/tasks" className="primary-button">
+              <CheckCircle2 size={18} />
+              去打卡
+            </NavLink>
+          </div>
         </div>
       </header>
 
@@ -76,6 +81,7 @@ export function AppLayout() {
           </NavLink>
         ))}
       </nav>
+      <PwaUpdatePrompt />
       <div className="h-24 lg:hidden" />
     </div>
   );
